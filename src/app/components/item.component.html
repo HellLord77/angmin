@@ -1,0 +1,5 @@
+@for (data of data; track data.id) {
+  <div>
+    <a [routerLink]="data.id">{{ JSON.stringify(data) }}</a>
+  </div>
+}
