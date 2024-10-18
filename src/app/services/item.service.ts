@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {map, throwError} from 'rxjs';
+import {throwError} from 'rxjs';
 
 import {UndefinedAlias} from '../errors/undefined-alias.error';
 import {NetworkService} from './network.service';
@@ -18,6 +18,6 @@ export class ItemService {
       return throwError(() => new UndefinedAlias(alias));
     }
 
-    return this.networkService.getItemPaginated$(server, name).pipe(map((data) => data.data));
+    return this.networkService.getItemPaginated$(server, name);
   }
 }

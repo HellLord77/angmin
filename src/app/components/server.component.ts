@@ -61,7 +61,7 @@ export class ServerComponent implements OnInit {
   searchElementRef = viewChild.required<ElementRef<HTMLInputElement>>('search');
   table = viewChild.required(Table);
 
-  contextModel: MenuItem[] = [
+  contextMenu: MenuItem[] = [
     {
       label: 'View',
       icon: PrimeIcons.EYE,
@@ -80,14 +80,14 @@ export class ServerComponent implements OnInit {
       command: () => this.confirmDeleteItems([this.selectedItem]),
     },
   ];
-  exportModel: MenuItem[] = [
+  exportMenu: MenuItem[] = [
     {
       label: 'Export all',
       icon: PrimeIcons.DOWNLOAD,
       command: () => this.chooseExportItems(this.items),
     },
   ];
-  deleteModel: MenuItem[] = [
+  deleteMenu: MenuItem[] = [
     {
       label: 'Delete all',
       icon: PrimeIcons.TRASH,
@@ -124,8 +124,8 @@ export class ServerComponent implements OnInit {
     this.subscription = this.serverService.getItems$(this.server()).subscribe({
       next: (items) => {
         this.items = items;
-        const itemNames = new Set(map(items, 'name'));
-        this.selectedItems = this.selectedItems.filter((item) => itemNames.has(item.name));
+        const itemNames = map(items, 'name');
+        this.selectedItems = this.selectedItems.filter((item) => itemNames.includes(item.name));
         this.itemsTotalLength = sum(map(items, 'length'));
         this.lastRefresh = new Date();
         this.messageService.add({
@@ -176,7 +176,7 @@ export class ServerComponent implements OnInit {
 
   chooseExportItems(items: Items) {
     this.#exportItems = items;
-    this.exportMessage = `Collections: ${map(items, 'name').join(', ')}`;
+    this.exportMessage = `You are about to export the following collections: ${map(items, 'name').join(', ')}. Choose the export format.`;
     this.exportVisible = true;
   }
 
@@ -186,7 +186,7 @@ export class ServerComponent implements OnInit {
 
   confirmDeleteItems(items: Items) {
     this.confirmationService.confirm({
-      message: `Collections: ${map(items, 'name').join(', ')}`,
+      message: `You are about to delete the following collections: ${map(items, 'name').join(', ')}. Are you sure?`,
       accept: () => this.#deleteItems(items),
       reject: () => this.messageService.add({severity: 'info', summary: 'Delete cancelled'}),
     });

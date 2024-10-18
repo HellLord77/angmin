@@ -1,5 +1,225 @@
-@for (data of data; track data.id) {
-  <div>
-    <a [routerLink]="data.id">{{ data.id }}</a>
-  </div>
-}
+<p-toast />
+
+<p-contextMenu #context [model]="contextMenu" />
+
+<p-confirmDialog
+  [dismissableMask]="true"
+  header="Delete data"
+  icon="pi pi-trash"
+  rejectButtonStyleClass="p-button-outlined"
+  styleClass="w-30rem"
+/>
+
+<p-dialog
+  [(visible)]="exportVisible"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [modal]="true"
+  [resizable]="false"
+  contentStyleClass="w-30rem"
+>
+  <ng-template pTemplate="header">
+    <h2>
+      <i class="pi pi-file-export"></i>
+      Export data
+    </h2>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    {{ exportMessage }}
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      [outlined]="true"
+      (onClick)="exportData(ExportType.CSV)"
+      badge="{,}"
+      label="CSV"
+      severity="secondary"
+    />
+    <p-button (onClick)="exportData(ExportType.JSON)" badge="{;}" label="JSON" severity="primary" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [modal]="true"
+  [visible]="state === State.Loading"
+  contentStyleClass="w-30rem"
+>
+  <ng-template pTemplate="header">
+    <h2>
+      <i class="pi pi-spin pi-spinner"></i>
+      Loading...
+    </h2>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <i class="pi pi-database"></i>
+    Database: {{ server() }}
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button (onClick)="cancelRefresh()" icon="pi pi-times" label="Cancel" severity="warning" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [modal]="true"
+  [visible]="state === State.Errored"
+  contentStyleClass="w-30rem"
+>
+  <ng-template pTemplate="header">
+    <h2>
+      <i class="pi pi-exclamation-circle"></i>
+      Error
+    </h2>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <i class="pi pi-database"></i>
+    Database: {{ server() }}
+    <p-messages [value]="messageError" />
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      [outlined]="true"
+      [routerLink]="['../']"
+      icon="pi pi-arrow-left"
+      label="Back"
+      severity="secondary"
+    />
+    <p-button (onClick)="refreshData()" icon="pi pi-refresh" label="Refresh" severity="primary" />
+  </ng-template>
+</p-dialog>
+
+<p-table
+  [(contextMenuSelection)]="selectedData"
+  [(selection)]="selectedData"
+  [contextMenu]="context"
+  [value]="paginatedData.data"
+  dataKey="id"
+  styleClass="p-datatable-gridlines p-datatable-striped"
+>
+  <ng-template pTemplate="caption">
+    <p-toolbar>
+      <ng-template pTemplate="start">
+        <div class="flex gap-2">
+          <p-fileUpload
+            [auto]="true"
+            [customUpload]="true"
+            (uploadHandler)="importData($event)"
+            accept=".csv,.json"
+            chooseIcon="pi pi-upload"
+            chooseLabel="Import"
+            mode="basic"
+          />
+          <p-splitButton
+            [buttonDisabled]="!selectedData.length"
+            [model]="exportMenu"
+            (onClick)="chooseExportData(selectedData)"
+            icon="pi pi-download"
+            label="Export"
+            severity="help"
+          />
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="center">
+        <h3>
+          <i class="pi pi-database"></i>
+          Collection: {{ item() }}
+        </h3>
+      </ng-template>
+
+      <ng-template pTemplate="end">
+        <div class="flex gap-2">
+          <p-button [disabled]="true" icon="pi pi-plus" label="Add" severity="success" />
+          <p-splitButton
+            [buttonDisabled]="!selectedData.length"
+            [model]="deleteMenu"
+            (onClick)="confirmDeleteData(selectedData)"
+            icon="pi pi-trash"
+            label="Delete"
+            severity="danger"
+            tooltip="All documents in selected collections will be deleted"
+          />
+        </div>
+      </ng-template>
+    </p-toolbar>
+
+    <p-toolbar>
+      <ng-template pTemplate="left">
+        <div
+          class="select-none"
+          [badgeDisabled]="!lastRefresh"
+          [value]="(lastRefresh | date:'shortTime') ?? ''"
+          pBadge
+        >
+          <p-button
+            [outlined]="true"
+            (onClick)="refreshData()"
+            icon="pi pi-refresh"
+            label="Refresh"
+          />
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="right">
+        <p-button
+          [outlined]="true"
+          (onClick)="resetTable()"
+          icon="pi pi-filter-slash"
+          label="Clear"
+        />
+      </ng-template>
+    </p-toolbar>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th class="w-1rem">
+        <p-tableHeaderCheckbox />
+      </th>
+      <!--<th>#</th>-->
+      <th pSortableColumn="id">
+        <i class="pi pi-list"></i> ID
+        <p-sortIcon field="id" />
+      </th>
+      @for (column of columns; track $index) {
+        <th [pSortableColumn]="column">
+          <i class="pi pi-list"></i> {{ column }}
+          <p-sortIcon [field]="column" />
+        </th>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template let-datum pTemplate="body">
+    <tr [pContextMenuRow]="datum">
+      <td>
+        <p-tableCheckbox [value]="datum" />
+      </td>
+      <td>
+        <a [routerLink]="datum.id">{{ datum.id }}</a>
+      </td>
+      @for (column of columns; track $index) {
+        <td>
+          {{ datum[column] }}
+        </td>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="100%" style="text-align: center">
+        <h4 class="p-badge-warning">No collections found</h4>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
