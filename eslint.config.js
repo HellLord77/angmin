@@ -1,16 +1,15 @@
 // @ts-check
-const eslint = require("@eslint/js");
-const tseslint = require("typescript-eslint");
-const angular = require("angular-eslint");
+const eslint = require('@eslint/js');
+const tseslint = require('typescript-eslint');
+const angular = require('angular-eslint');
 
-const unusedImports = require("eslint-plugin-unused-imports");
-const simpleImportSort = require("eslint-plugin-simple-import-sort");
+const unusedImports = require('eslint-plugin-unused-imports');
+const simpleImportSort = require('eslint-plugin-simple-import-sort');
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
-const eslintConfigPrettier = require("eslint-config-prettier");
 
 module.exports = tseslint.config(
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
     extends: [
       eslint.configs.recommended,
       ...tseslint.configs.recommended,
@@ -19,56 +18,47 @@ module.exports = tseslint.config(
     ],
     processor: angular.processInlineTemplates,
     rules: {
-      "@angular-eslint/directive-selector": [
-        "error",
+      '@angular-eslint/directive-selector': [
+        'error',
         {
-          type: "attribute",
-          prefix: "app",
-          style: "camelCase",
+          type: 'attribute',
+          prefix: 'app',
+          style: 'camelCase',
         },
       ],
-      "@angular-eslint/component-selector": [
-        "error",
+      '@angular-eslint/component-selector': [
+        'error',
         {
-          type: "element",
-          prefix: "app",
-          style: "kebab-case",
+          type: 'element',
+          prefix: 'app',
+          style: 'kebab-case',
         },
       ],
     },
   },
   {
-    files: ["**/*.html"],
-    extends: [
-      ...angular.configs.templateRecommended,
-      ...angular.configs.templateAccessibility,
-    ],
+    files: ['**/*.html'],
+    extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
     rules: {},
   },
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
     plugins: {
-      "unused-imports": unusedImports,
+      'unused-imports': unusedImports,
     },
     rules: {
-      "unused-imports/no-unused-imports": "warn",
+      'unused-imports/no-unused-imports': 'warn',
     },
   },
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
     plugins: {
-      "simple-import-sort": simpleImportSort,
+      'simple-import-sort': simpleImportSort,
     },
     rules: {
-      "simple-import-sort/imports": "warn",
-      "simple-import-sort/exports": "warn",
+      'simple-import-sort/imports': 'warn',
+      'simple-import-sort/exports': 'warn',
     },
   },
-  {
-    files: ["**/*.ts"],
-    extends: [
-      eslintPluginPrettierRecommended,
-    ],
-  },
-  eslintConfigPrettier,
+  eslintPluginPrettierRecommended,
 );

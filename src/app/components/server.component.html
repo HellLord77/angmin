@@ -1,6 +1,11 @@
 <p-toast />
-<p-confirmDialog [dismissableMask]="true" header="Are you sure?" icon="pi pi-trash"
-                 rejectButtonStyleClass="p-button-outlined" styleClass="w-30rem" />
+<p-confirmDialog
+  [dismissableMask]="true"
+  header="Are you sure?"
+  icon="pi pi-trash"
+  rejectButtonStyleClass="p-button-outlined"
+  styleClass="w-30rem"
+/>
 <p-contextMenu #contextMenu [model]="contextModel" />
 
 <p-dialog
@@ -9,7 +14,8 @@
   [draggable]="false"
   [modal]="true"
   [resizable]="false"
-  contentStyleClass="w-30rem">
+  contentStyleClass="w-30rem"
+>
   <ng-template pTemplate="header">
     <h2>
       <i class="pi pi-file-export"></i>
@@ -23,21 +29,28 @@
 
   <ng-template pTemplate="footer">
     <p-button
-      (onClick)="exportItems(ExportType.CSV)"
       [outlined]="true"
+      (onClick)="exportItems(ExportType.CSV)"
       badge="{,}"
       label="CSV"
-      severity="secondary" />
+      severity="secondary"
+    />
     <p-button
       (onClick)="exportItems(ExportType.JSON)"
       badge="{;}"
       label="JSON"
-      severity="primary" />
+      severity="primary"
+    />
   </ng-template>
 </p-dialog>
 
-<p-dialog [closable]="false" [draggable]="false" [modal]="true" [visible]="state === State.Loading"
-          contentStyleClass="w-30rem">
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [modal]="true"
+  [visible]="state === State.Loading"
+  contentStyleClass="w-30rem"
+>
   <ng-template pTemplate="header">
     <h2>
       <i class="pi pi-spin pi-spinner"></i>
@@ -51,16 +64,17 @@
   </ng-template>
 
   <ng-template pTemplate="footer">
-    <p-button
-      (onClick)="cancelRefresh()"
-      icon="pi pi-times"
-      label="Cancel"
-      severity="warning" />
+    <p-button (onClick)="cancelRefresh()" icon="pi pi-times" label="Cancel" severity="warning" />
   </ng-template>
 </p-dialog>
 
-<p-dialog [closable]="false" [draggable]="false" [modal]="true" [visible]="state === State.Errored"
-          contentStyleClass="w-30rem">
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [modal]="true"
+  [visible]="state === State.Errored"
+  contentStyleClass="w-30rem"
+>
   <ng-template pTemplate="header">
     <h2>
       <i class="pi pi-exclamation-circle"></i>
@@ -75,7 +89,13 @@
   </ng-template>
 
   <ng-template pTemplate="footer">
-    <p-button [outlined]="true" [routerLink]="['../']" icon="pi pi-arrow-left" label="Back" severity="secondary" />
+    <p-button
+      [outlined]="true"
+      [routerLink]="['../']"
+      icon="pi pi-arrow-left"
+      label="Back"
+      severity="secondary"
+    />
     <p-button (onClick)="refreshItems()" icon="pi pi-refresh" label="Refresh" severity="primary" />
   </ng-template>
 </p-dialog>
@@ -90,26 +110,29 @@
     [value]="items"
     dataKey="name"
     sortField="name"
-    styleClass="p-datatable-gridlines p-datatable-striped">
+    styleClass="p-datatable-gridlines p-datatable-striped"
+  >
     <ng-template pTemplate="caption">
       <p-toolbar>
         <ng-template pTemplate="start">
           <div class="flex gap-2">
             <p-fileUpload
-              (uploadHandler)="importItems($event)"
               [auto]="true"
               [customUpload]="true"
+              (uploadHandler)="importItems($event)"
               accept=".csv,.json"
               chooseIcon="pi pi-upload"
               chooseLabel="Import"
-              mode="basic" />
+              mode="basic"
+            />
             <p-splitButton
-              (onClick)="chooseExportItems(selectedItems)"
               [buttonDisabled]="!selectedItems.length"
               [model]="exportModel"
+              (onClick)="chooseExportItems(selectedItems)"
               icon="pi pi-download"
               label="Export"
-              severity="help" />
+              severity="help"
+            />
           </div>
         </ng-template>
 
@@ -122,29 +145,34 @@
 
         <ng-template pTemplate="end">
           <div class="flex gap-2">
-            <p-button
-              [disabled]="true"
-              icon="pi pi-plus"
-              label="New"
-              severity="success" />
+            <p-button [disabled]="true" icon="pi pi-plus" label="New" severity="success" />
             <p-splitButton
-              (onClick)="confirmDeleteItems(selectedItems)"
               [buttonDisabled]="!selectedItems.length"
               [model]="deleteModel"
+              (onClick)="confirmDeleteItems(selectedItems)"
               icon="pi pi-trash"
               label="Delete"
               severity="danger"
-              tooltip="All documents in selected collections will be deleted" />
+              tooltip="All documents in selected collections will be deleted"
+            />
           </div>
         </ng-template>
       </p-toolbar>
 
       <p-toolbar>
         <ng-template pTemplate="left">
-          <div [badgeDisabled]="!lastRefresh" [value]="(lastRefresh | date:'shortTime') ?? ''"
-               class="select-none"
-               pBadge>
-            <p-button (onClick)="refreshItems()" [outlined]="true" icon="pi pi-refresh" label="Refresh" />
+          <div
+            class="select-none"
+            [badgeDisabled]="!lastRefresh"
+            [value]="(lastRefresh | date:'shortTime') ?? ''"
+            pBadge
+          >
+            <p-button
+              [outlined]="true"
+              (onClick)="refreshItems()"
+              icon="pi pi-refresh"
+              label="Refresh"
+            />
           </div>
         </ng-template>
 
@@ -154,23 +182,30 @@
               <p-inputGroupAddon>
                 <i class="pi pi-search"></i>
               </p-inputGroupAddon>
-              <input #search
-                     (input)="table.filter(search.value, 'name', 'contains')"
-                     pInputText
-                     placeholder="Search..."
-                     type="text" />
-              <button (click)="clearInput()"
-                      [disabled]="!search.value"
-                      icon="pi pi-times"
-                      pButton
-                      severity="danger"
-                      type="button">
-              </button>
+              <input
+                #search
+                (input)="filterTable(search.value)"
+                pInputText
+                placeholder="Search..."
+                type="text"
+              />
+              <button
+                [disabled]="!search.value"
+                (click)="clearSearch()"
+                icon="pi pi-times"
+                pButton
+                severity="danger"
+                type="button"
+              ></button>
             </p-inputGroup>
-            <p-button (onClick)="clearTable()" [outlined]="true" icon="pi pi-filter-slash" label="Clear" />
+            <p-button
+              [outlined]="true"
+              (onClick)="resetTable()"
+              icon="pi pi-filter-slash"
+              label="Clear"
+            />
           </div>
         </ng-template>
-
       </p-toolbar>
     </ng-template>
 

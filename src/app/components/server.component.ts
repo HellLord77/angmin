@@ -147,13 +147,17 @@ export class ServerComponent implements OnInit {
     this.state = State.Cancelled;
   }
 
-  clearInput() {
+  clearSearch() {
     this.searchElementRef().nativeElement.value = '';
-    this.table().filter('', 'name', 'contains');
+    this.filterTable('');
   }
 
-  clearTable() {
-    this.clearInput();
+  filterTable(value: string) {
+    this.table().filter(value, 'name', 'contains');
+  }
+
+  resetTable() {
+    this.clearSearch();
 
     const table = this.table();
     table.sortField = 'name';
