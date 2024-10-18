@@ -1,4 +1,6 @@
-import {Component, input, OnInit} from '@angular/core';
+import {Component, inject, input, OnInit} from '@angular/core';
+
+import {DatumService} from '../services/datum.service';
 
 @Component({
   selector: 'app-datum',
@@ -12,7 +14,15 @@ export class DatumComponent implements OnInit {
   item = input.required<string>();
   datum = input.required<string>();
 
+  datumService = inject(DatumService);
+
+  string_ = '';
+
   ngOnInit() {
     console.log(`Datum: ${this.server()}, ${this.item()}, ${this.datum()}`);
+
+    this.datumService.getString$(this.server(), this.item(), this.datum()).subscribe((string_) => {
+      this.string_ = string_;
+    });
   }
 }

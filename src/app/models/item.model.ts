@@ -3,4 +3,4 @@ export interface Item {
   length: number;
 }
 
-export declare type Items = Item[];
+export type Items = Item[];

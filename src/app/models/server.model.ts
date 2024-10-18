@@ -10,4 +10,4 @@ export interface Server {
   password?: string;
 }
 
-export declare type Servers = Server[];
+export type Servers = Server[];

@@ -15,8 +15,6 @@ import {ItemService} from '../services/item.service';
   styleUrl: './item.component.css',
 })
 export class ItemComponent implements OnInit {
-  protected readonly JSON = JSON;
-
   server = input.required<string>();
   item = input.required<string>();
 
