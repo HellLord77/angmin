@@ -106,11 +106,11 @@
   [(contextMenuSelection)]="selectedItem"
   [(selection)]="selectedItems"
   [contextMenu]="context"
-  [sortOrder]="1"
   [scrollable]="true"
+  [sortOrder]="1"
   [value]="items"
-  scrollHeight="flex"
   dataKey="name"
+  scrollHeight="flex"
   sortField="name"
   styleClass="p-datatable-gridlines p-datatable-striped"
 >
@@ -139,10 +139,10 @@
       </ng-template>
 
       <ng-template pTemplate="center">
-        <h3>
-          <i class="pi pi-database"></i>
+        <h1>
+          <i class="pi pi-database text-2xl"></i>
           Database: {{ server() }}
-        </h3>
+        </h1>
       </ng-template>
 
       <ng-template pTemplate="end">
@@ -250,7 +250,7 @@
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="100%" style="text-align: center">
+      <td class="text-center" colspan="100%">
         <h4 class="p-badge-warning">No collections found</h4>
       </td>
     </tr>

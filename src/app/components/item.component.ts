@@ -228,4 +228,8 @@ export class ItemComponent implements OnInit {
       reject: () => this.messageService.add({severity: 'info', summary: 'Delete cancelled'}),
     });
   }
+
+  cancelEditData() {
+    this.messageService.add({severity: 'info', summary: 'Edit cancelled'});
+  }
 }

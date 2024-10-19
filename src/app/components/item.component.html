@@ -56,8 +56,8 @@
   </ng-template>
 
   <ng-template pTemplate="content">
-    <i class="pi pi-database"></i>
-    Database: {{ server() }}
+    <i class="pi pi-table"></i>
+    Collection: {{ item() }}
   </ng-template>
 
   <ng-template pTemplate="footer">
@@ -80,8 +80,8 @@
   </ng-template>
 
   <ng-template pTemplate="content">
-    <i class="pi pi-database"></i>
-    Database: {{ server() }}
+    <i class="pi pi-table"></i>
+    Collection: {{ item() }}
     <p-messages [value]="messageError" />
   </ng-template>
 
@@ -102,19 +102,20 @@
   [(selection)]="selectedData"
   [columns]="selectedColumns?.length ? selectedColumns : columns"
   [contextMenu]="context"
+  [lazyLoadOnInit]="false"
+  [lazy]="true"
+  [paginator]="true"
+  [rowsPerPageOptions]="[10, 25, 50]"
+  [rows]="10"
   [scrollable]="true"
+  [showCurrentPageReport]="true"
   [totalRecords]="paginatedData.items"
   [value]="paginatedData.data"
-  [paginator]="true"
-  [rows]="10"
-  [showCurrentPageReport]="true"
-  [rowsPerPageOptions]="[10, 25, 50]"
-  [lazy]="true"
-  [lazyLoadOnInit]="false"
   (onLazyLoad)="refreshData()"
+  dataKey="id"
+  editMode="row"
   scrollHeight="flex"
   sortMode="multiple"
-  dataKey="id"
   styleClass="p-datatable-gridlines p-datatable-striped"
 >
   <ng-template pTemplate="caption">
@@ -142,10 +143,10 @@
       </ng-template>
 
       <ng-template pTemplate="center">
-        <h3>
-          <i class="pi pi-database"></i>
+        <h1>
+          <i class="pi pi-table text-2xl"></i>
           Collection: {{ item() }}
-        </h3>
+        </h1>
       </ng-template>
 
       <ng-template pTemplate="end">
@@ -185,8 +186,8 @@
         <div class="flex gap-2">
           <p-multiSelect
             [(ngModel)]="selectedColumns"
-            [options]="columns"
             [loading]="state === State.Loading"
+            [options]="columns"
             [showClear]="true"
             display="chip"
             placeholder="Choose fields"
@@ -202,12 +203,12 @@
     </p-toolbar>
   </ng-template>
 
-  <ng-template pTemplate="header" let-columns>
+  <ng-template let-columns pTemplate="header">
     <tr>
       <th class="w-1rem" pFrozenColumn>
         <p-tableHeaderCheckbox />
       </th>
-      <th pSortableColumn="id" pFrozenColumn>
+      <th pFrozenColumn pSortableColumn="id">
         <i class="pi pi-list"></i> id
         <p-sortIcon field="id" />
       </th>
@@ -217,11 +218,12 @@
           <p-sortIcon [field]="column" />
         </th>
       }
+      <th alignFrozen="right" pFrozenColumn></th>
     </tr>
   </ng-template>
 
-  <ng-template let-datum let-columns="columns" pTemplate="body">
-    <tr [pContextMenuRow]="datum" [pSelectableRow]="datum">
+  <ng-template let-columns="columns" let-datum let-editing="editing" pTemplate="body">
+    <tr [pContextMenuRow]="datum" [pEditableRow]="datum" [pSelectableRow]="datum">
       <td pFrozenColumn>
         <p-tableCheckbox [value]="datum" />
       </td>
@@ -230,15 +232,43 @@
       </td>
       @for (column of columns; track column) {
         <td>
-          {{ datum[column] }}
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input
+                class="w-full"
+                [(ngModel)]="datum[column]"
+                (keydown.home)="$event.stopPropagation()"
+                (keydown.end)="$event.stopPropagation()"
+                pInputText
+                type="text"
+              />
+            </ng-template>
+
+            <ng-template pTemplate="output"> {{ datum[column] }}</ng-template>
+          </p-cellEditor>
         </td>
       }
+      <td alignFrozen="right" pFrozenColumn>
+        <div class="flex justify-content-center gap-2 w-8rem">
+          @if (editing) {
+            <p-button icon="pi pi-check" pSaveEditableRow severity="success" />
+            <p-button
+              (onClick)="cancelEditData()"
+              icon="pi pi-times"
+              pCancelEditableRow
+              severity="danger"
+            />
+          } @else {
+            <p-button icon="pi pi-pencil" pInitEditableRow severity="warning" />
+          }
+        </div>
+      </td>
     </tr>
   </ng-template>
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="100%" style="text-align: center">
+      <td class="text-center" colspan="100%">
         <h4 class="p-badge-warning">No collections found</h4>
       </td>
     </tr>
