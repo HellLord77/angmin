@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 
 import {Scheme} from '../enums/scheme';
-import {Server, Servers} from '../models/server.model';
+import {Server} from '../models/server.model';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +18,7 @@ export class StorageService {
     return this.#servers.get(alias);
   }
 
-  getServers(): Servers {
+  getServers(): Server[] {
     return [...this.#servers.values()];
   }
 }

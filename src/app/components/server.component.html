@@ -4,7 +4,7 @@
 
 <p-confirmDialog
   [dismissableMask]="true"
-  header="Delete collections"
+  header="Delete collection(s)"
   icon="pi pi-trash"
   rejectButtonStyleClass="p-button-outlined"
   styleClass="w-30rem"
@@ -21,7 +21,7 @@
   <ng-template pTemplate="header">
     <h2>
       <i class="pi pi-file-export"></i>
-      Export collections
+      Export collection(s)
     </h2>
   </ng-template>
 
@@ -93,7 +93,7 @@
   <ng-template pTemplate="footer">
     <p-button
       [outlined]="true"
-      [routerLink]="['../']"
+      [routerLink]="['..']"
       icon="pi pi-arrow-left"
       label="Back"
       severity="secondary"
@@ -107,7 +107,9 @@
   [(selection)]="selectedItems"
   [contextMenu]="context"
   [sortOrder]="1"
+  [scrollable]="true"
   [value]="items"
+  scrollHeight="flex"
   dataKey="name"
   sortField="name"
   styleClass="p-datatable-gridlines p-datatable-striped"
@@ -121,15 +123,15 @@
             [customUpload]="true"
             (uploadHandler)="importItems($event)"
             accept=".csv,.json"
-            chooseIcon="pi pi-upload"
+            chooseIcon="pi pi-download"
             chooseLabel="Import"
             mode="basic"
           />
           <p-splitButton
             [buttonDisabled]="!selectedItems.length"
             [model]="exportMenu"
-            (onClick)="chooseExportItems(selectedItems)"
-            icon="pi pi-download"
+            (onClick)="chooseExportItems(ActionType.Selection)"
+            icon="pi pi-upload"
             label="Export"
             severity="help"
           />
@@ -149,7 +151,7 @@
           <p-splitButton
             [buttonDisabled]="!selectedItems.length"
             [model]="deleteMenu"
-            (onClick)="confirmDeleteItems(selectedItems)"
+            (onClick)="confirmDeleteItems(ActionType.Selection)"
             icon="pi pi-trash"
             label="Delete"
             severity="danger"
@@ -211,14 +213,14 @@
 
   <ng-template pTemplate="header">
     <tr>
-      <th class="w-1rem">
+      <th class="w-1rem" pFrozenColumn>
         <p-tableHeaderCheckbox />
       </th>
-      <th pSortableColumn="name">
+      <th pFrozenColumn pSortableColumn="name">
         <i class="pi pi-list"></i> Collection
         <p-sortIcon field="name" />
       </th>
-      <th class="w-2" pSortableColumn="length">
+      <th pSortableColumn="length">
         <i class="pi pi-hashtag"></i> Objects
         <p-sortIcon field="length" />
       </th>
@@ -231,10 +233,10 @@
 
   <ng-template let-item pTemplate="body">
     <tr [pContextMenuRow]="item">
-      <td>
+      <td pFrozenColumn>
         <p-tableCheckbox [value]="item" />
       </td>
-      <td>
+      <td pFrozenColumn>
         <a [routerLink]="item.name">{{ item.name }}</a>
       </td>
       <td>

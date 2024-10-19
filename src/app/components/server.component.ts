@@ -18,10 +18,11 @@ import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
 import {Subscription} from 'rxjs';
 
+import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
 import {State} from '../enums/state';
-import {Item, Items} from '../models/item.model';
-import {ServerService} from '../services/server.service';
+import {Item} from '../models/item.model';
+import {AngminService} from '../services/angmin.service';
 
 @Component({
   selector: 'app-server',
@@ -56,7 +57,7 @@ export class ServerComponent implements OnInit {
   router = inject(Router);
   messageService = inject(MessageService);
   confirmationService = inject(ConfirmationService);
-  serverService = inject(ServerService);
+  angminService = inject(AngminService);
 
   searchElementRef = viewChild.required<ElementRef<HTMLInputElement>>('search');
   table = viewChild.required(Table);
@@ -71,34 +72,34 @@ export class ServerComponent implements OnInit {
     {separator: true},
     {
       label: 'Export',
-      icon: PrimeIcons.DOWNLOAD,
-      command: () => this.chooseExportItems([this.selectedItem]),
+      icon: PrimeIcons.UPLOAD,
+      command: () => this.chooseExportItems(ActionType.Context),
     },
     {
       label: 'Delete',
       icon: PrimeIcons.TRASH,
-      command: () => this.confirmDeleteItems([this.selectedItem]),
+      command: () => this.confirmDeleteItems(ActionType.Context),
     },
   ];
   exportMenu: MenuItem[] = [
     {
       label: 'Export all',
-      icon: PrimeIcons.DOWNLOAD,
-      command: () => this.chooseExportItems(this.items),
+      icon: PrimeIcons.UPLOAD,
+      command: () => this.chooseExportItems(ActionType.Global),
     },
   ];
   deleteMenu: MenuItem[] = [
     {
       label: 'Delete all',
       icon: PrimeIcons.TRASH,
-      command: () => this.confirmDeleteItems(this.items),
+      command: () => this.confirmDeleteItems(ActionType.Global),
       tooltip: 'All documents in all collections will be deleted',
     },
   ];
 
   exportVisible = false;
-  items: Items = [];
-  selectedItems: Items = [];
+  items: Item[] = [];
+  selectedItems: Item[] = [];
 
   itemsTotalLength!: number;
   exportMessage!: string;
@@ -107,9 +108,11 @@ export class ServerComponent implements OnInit {
   messageError!: Message[];
   state!: State;
   selectedItem!: Item;
-  #exportItems!: Items;
+
+  #exportItems?: Item[];
 
   protected readonly State = State;
+  protected readonly ActionType = ActionType;
   protected readonly ExportType = ExportType;
 
   ngOnInit() {
@@ -121,11 +124,11 @@ export class ServerComponent implements OnInit {
   refreshItems() {
     this.state = State.Loading;
 
-    this.subscription = this.serverService.getItems$(this.server()).subscribe({
+    this.subscription = this.angminService.getItems$(this.server()).subscribe({
       next: (items) => {
         this.items = items;
-        const itemNames = map(items, 'name');
-        this.selectedItems = this.selectedItems.filter((item) => itemNames.includes(item.name));
+        const itemNames = new Set(map(items, 'name'));
+        this.selectedItems = this.selectedItems.filter((item) => itemNames.has(item.name));
         this.itemsTotalLength = sum(map(items, 'length'));
         this.lastRefresh = new Date();
         this.messageService.add({
@@ -174,19 +177,40 @@ export class ServerComponent implements OnInit {
     console.log(`Export items: .${exportType} ${JSON.stringify(this.#exportItems)}`);
   }
 
-  chooseExportItems(items: Items) {
-    this.#exportItems = items;
-    this.exportMessage = `You are about to export the following collections: ${map(items, 'name').join(', ')}. Choose the export format.`;
+  chooseExportItems(actionType: ActionType) {
+    if (actionType === ActionType.Context) {
+      this.#exportItems = [this.selectedItem];
+      this.exportMessage = `You are about to export the following collection: ${this.selectedItem.name}. `;
+    } else if (actionType === ActionType.Selection) {
+      this.#exportItems = this.selectedItems;
+      this.exportMessage = `You are about to export the selected collection(s): ${map(this.selectedItems, 'name')}. `;
+    } else {
+      this.exportMessage = `You are about to export all the collections in the database. `;
+    }
+    this.exportMessage += 'Choose exported collection format.';
     this.exportVisible = true;
   }
 
-  #deleteItems(items: Items) {
+  #deleteItems(items?: Item[]) {
     console.log(`Delete items: ${JSON.stringify(items)}`);
   }
 
-  confirmDeleteItems(items: Items) {
+  confirmDeleteItems(actionType: ActionType) {
+    let items: Item[];
+    let message: string;
+    if (actionType === ActionType.Context) {
+      items = [this.selectedItem];
+      message = `You are about to delete the following collection: ${this.selectedItem.name}. `;
+    } else if (actionType === ActionType.Selection) {
+      items = this.selectedItems;
+      message = `You are about to delete the selected collection(s): ${map(this.selectedItems, 'name')}. `;
+    } else {
+      message = `You are about to delete all the collections in the database. `;
+    }
+    message += 'Are you sure?';
+
     this.confirmationService.confirm({
-      message: `You are about to delete the following collections: ${map(items, 'name').join(', ')}. Are you sure?`,
+      message: message,
       accept: () => this.#deleteItems(items),
       reject: () => this.messageService.add({severity: 'info', summary: 'Delete cancelled'}),
     });

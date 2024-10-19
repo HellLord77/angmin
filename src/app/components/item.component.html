@@ -4,7 +4,7 @@
 
 <p-confirmDialog
   [dismissableMask]="true"
-  header="Delete data"
+  header="Delete datum/data"
   icon="pi pi-trash"
   rejectButtonStyleClass="p-button-outlined"
   styleClass="w-30rem"
@@ -21,7 +21,7 @@
   <ng-template pTemplate="header">
     <h2>
       <i class="pi pi-file-export"></i>
-      Export data
+      Export datum/data
     </h2>
   </ng-template>
 
@@ -30,6 +30,7 @@
   </ng-template>
 
   <ng-template pTemplate="footer">
+    <p-button (onClick)="exportData(ExportType.JSON)" badge="{;}" label="JSON" severity="primary" />
     <p-button
       [outlined]="true"
       (onClick)="exportData(ExportType.CSV)"
@@ -37,7 +38,6 @@
       label="CSV"
       severity="secondary"
     />
-    <p-button (onClick)="exportData(ExportType.JSON)" badge="{;}" label="JSON" severity="primary" />
   </ng-template>
 </p-dialog>
 
@@ -88,7 +88,7 @@
   <ng-template pTemplate="footer">
     <p-button
       [outlined]="true"
-      [routerLink]="['../']"
+      [routerLink]="['..']"
       icon="pi pi-arrow-left"
       label="Back"
       severity="secondary"
@@ -98,10 +98,22 @@
 </p-dialog>
 
 <p-table
-  [(contextMenuSelection)]="selectedData"
+  [(contextMenuSelection)]="selectedDatum"
   [(selection)]="selectedData"
+  [columns]="selectedColumns?.length ? selectedColumns : columns"
   [contextMenu]="context"
+  [scrollable]="true"
+  [totalRecords]="paginatedData.items"
   [value]="paginatedData.data"
+  [paginator]="true"
+  [rows]="10"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 25, 50]"
+  [lazy]="true"
+  [lazyLoadOnInit]="false"
+  (onLazyLoad)="refreshData()"
+  scrollHeight="flex"
+  sortMode="multiple"
   dataKey="id"
   styleClass="p-datatable-gridlines p-datatable-striped"
 >
@@ -114,15 +126,15 @@
             [customUpload]="true"
             (uploadHandler)="importData($event)"
             accept=".csv,.json"
-            chooseIcon="pi pi-upload"
+            chooseIcon="pi pi-download"
             chooseLabel="Import"
             mode="basic"
           />
           <p-splitButton
             [buttonDisabled]="!selectedData.length"
             [model]="exportMenu"
-            (onClick)="chooseExportData(selectedData)"
-            icon="pi pi-download"
+            (onClick)="chooseExportData(ActionType.Selection)"
+            icon="pi pi-upload"
             label="Export"
             severity="help"
           />
@@ -142,7 +154,7 @@
           <p-splitButton
             [buttonDisabled]="!selectedData.length"
             [model]="deleteMenu"
-            (onClick)="confirmDeleteData(selectedData)"
+            (onClick)="confirmDeleteData(ActionType.Selection)"
             icon="pi pi-trash"
             label="Delete"
             severity="danger"
@@ -157,7 +169,7 @@
         <div
           class="select-none"
           [badgeDisabled]="!lastRefresh"
-          [value]="(lastRefresh | date:'shortTime') ?? ''"
+          [value]="(lastRefresh | date:'shortTime')!"
           pBadge
         >
           <p-button
@@ -170,27 +182,36 @@
       </ng-template>
 
       <ng-template pTemplate="right">
-        <p-button
-          [outlined]="true"
-          (onClick)="resetTable()"
-          icon="pi pi-filter-slash"
-          label="Clear"
-        />
+        <div class="flex gap-2">
+          <p-multiSelect
+            [(ngModel)]="selectedColumns"
+            [options]="columns"
+            [loading]="state === State.Loading"
+            [showClear]="true"
+            display="chip"
+            placeholder="Choose fields"
+          />
+          <p-button
+            [outlined]="true"
+            (onClick)="resetTable()"
+            icon="pi pi-filter-slash"
+            label="Clear"
+          />
+        </div>
       </ng-template>
     </p-toolbar>
   </ng-template>
 
-  <ng-template pTemplate="header">
+  <ng-template pTemplate="header" let-columns>
     <tr>
-      <th class="w-1rem">
+      <th class="w-1rem" pFrozenColumn>
         <p-tableHeaderCheckbox />
       </th>
-      <!--<th>#</th>-->
-      <th pSortableColumn="id">
-        <i class="pi pi-list"></i> ID
+      <th pSortableColumn="id" pFrozenColumn>
+        <i class="pi pi-list"></i> id
         <p-sortIcon field="id" />
       </th>
-      @for (column of columns; track $index) {
+      @for (column of columns; track column) {
         <th [pSortableColumn]="column">
           <i class="pi pi-list"></i> {{ column }}
           <p-sortIcon [field]="column" />
@@ -199,15 +220,15 @@
     </tr>
   </ng-template>
 
-  <ng-template let-datum pTemplate="body">
-    <tr [pContextMenuRow]="datum">
-      <td>
+  <ng-template let-datum let-columns="columns" pTemplate="body">
+    <tr [pContextMenuRow]="datum" [pSelectableRow]="datum">
+      <td pFrozenColumn>
         <p-tableCheckbox [value]="datum" />
       </td>
-      <td>
+      <td pFrozenColumn>
         <a [routerLink]="datum.id">{{ datum.id }}</a>
       </td>
-      @for (column of columns; track $index) {
+      @for (column of columns; track column) {
         <td>
           {{ datum[column] }}
         </td>

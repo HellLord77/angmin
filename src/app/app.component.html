@@ -1,5 +1,7 @@
-<app-header />
-<div class="px-4">
-  <router-outlet />
+<div class="flex flex-column">
+  <app-header style="height: 10vh" />
+  <div class="border-3 border-round border-primary mx-2" style="height: 85vh">
+    <router-outlet />
+  </div>
+  <app-footer style="height: 5vh" />
 </div>
-<app-footer />

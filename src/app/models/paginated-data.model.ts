@@ -1,4 +1,4 @@
-import {Data} from './datum.model';
+import {Datum} from './datum.model';
 
 export interface PaginatedData {
   first: number;
@@ -7,5 +7,5 @@ export interface PaginatedData {
   last: number;
   pages: number;
   items: number;
-  data: Data;
+  data: Datum[];
 }

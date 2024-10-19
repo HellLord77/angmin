@@ -9,5 +9,3 @@ export interface Server {
   username?: string;
   password?: string;
 }
-
-export type Servers = Server[];
