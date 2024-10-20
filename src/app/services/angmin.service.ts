@@ -18,6 +18,10 @@ export class AngminService {
   storageService = inject(StorageService);
   networkService = inject(NetworkService);
 
+  getServers() {
+    return this.storageService.getServers();
+  }
+
   getItems$(alias: string) {
     const server = this.storageService.getServer(alias);
     if (server === undefined) {
@@ -82,13 +86,7 @@ export class AngminService {
     return items;
   }
 
-  getPaginatedData$(
-    alias: string,
-    name: string,
-    page: number,
-    per_page: number,
-    sortMetas: SortMeta[],
-  ) {
+  getData$(alias: string, name: string, page: number, per_page: number, sortMetas: SortMeta[]) {
     const server = this.storageService.getServer(alias);
     if (server === undefined) {
       return throwError(() => new UndefinedAlias(alias));
@@ -99,5 +97,16 @@ export class AngminService {
       .toString();
 
     return this.networkService.getDataPaginated$(server, name, page, per_page, sort);
+  }
+
+  getValue$(alias: string, name: string, id: string) {
+    const server = this.storageService.getServer(alias);
+    if (server === undefined) {
+      return throwError(() => new UndefinedAlias(alias));
+    }
+
+    return this.networkService
+      .getDatum$(server, name, id)
+      .pipe(map((datum) => JSON.stringify(datum)));
   }
 }

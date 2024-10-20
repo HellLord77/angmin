@@ -1,7 +1,20 @@
-<div class="flex flex-column">
-  <app-header style="height: 10vh" />
-  <div class="border-3 border-round border-primary mx-2" style="height: 85vh">
-    <router-outlet />
+<div class="flex justify-content-center">
+  <div class="flex flex-column gap-2 w-full">
+    <app-header class="h-6rem" />
+    <div class="border-3 border-round border-primary" style="height: 88vh">
+      <router-outlet />
+    </div>
   </div>
-  <app-footer style="height: 5vh" />
 </div>
+
+<p-sidebar
+  [modal]="false"
+  [style]="{height: 'max-content', background: 'unset'}"
+  [visible]="true"
+  position="bottom"
+  styleClass="border-none shadow-none"
+>
+  <ng-template pTemplate="headless">
+    <app-footer class="p-2 m-2 border-round shadow-5" />
+  </ng-template>
+</p-sidebar>

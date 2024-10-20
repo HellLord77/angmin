@@ -1,13 +1,13 @@
 import {TestBed} from '@angular/core/testing';
 
-import {DatumService} from './datum.service';
+import {VisualService} from './visual.service';
 
-describe('DatumService', () => {
-  let service: DatumService;
+describe('VisualService', () => {
+  let service: VisualService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(DatumService);
+    service = TestBed.inject(VisualService);
   });
 
   it('should be created', () => {

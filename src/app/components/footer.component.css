@@ -1,0 +1,5 @@
+:host {
+  width: max-content;
+  background: rgba(59, 130, 246, 0.2);
+  backdrop-filter: blur(1px);
+}

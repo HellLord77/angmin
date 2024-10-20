@@ -1,1 +1,39 @@
-<p-breadcrumb [home]="home" [model]="navigationMenu" />
+<p-toolbar styleClass="h-full py-0">
+  <ng-template pTemplate="start">
+    <p-breadcrumb [home]="home" [model]="navigationMenu">
+      <ng-template let-item pTemplate="item">
+        <p-tag [icon]="item.icon" [routerLink]="item.route" [value]="item.label" />
+      </ng-template>
+    </p-breadcrumb>
+  </ng-template>
+  <ng-template pTemplate="end">
+    <div class="flex align-items-center">
+      <p-buttonGroup>
+        <p-button
+          [disabled]="scale === -2"
+          (onClick)="decreaseScale()"
+          icon="pi pi-minus"
+          styleClass="py-2"
+        />
+        <p-button [disabled]="true" [label]="scale.toString()" styleClass="py-2" />
+        <p-button
+          [disabled]="scale === 2"
+          (onClick)="increaseScale()"
+          icon="pi pi-plus"
+          styleClass="py-2"
+        />
+      </p-buttonGroup>
+      <p-divider layout="vertical" />
+      <div class="flex gap-2">
+        <i class="pi pi-sun text-3xl"></i>
+        <p-inputSwitch
+          [(ngModel)]="theme"
+          [falseValue]="Theme.Light"
+          [trueValue]="Theme.Dark"
+          (onChange)="visualService.setTheme(theme)"
+        />
+        <i class="pi pi-moon text-3xl"></i>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>

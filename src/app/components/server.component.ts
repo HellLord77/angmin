@@ -2,16 +2,18 @@ import {DatePipe, DecimalPipe, PercentPipe} from '@angular/common';
 import {Component, ElementRef, inject, input, OnInit, viewChild} from '@angular/core';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {map, sum} from 'lodash';
-import {ConfirmationService, MenuItem, Message, MessageService, PrimeIcons} from 'primeng/api';
+import {ConfirmationService, MenuItem, MessageService, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {ContextMenuModule} from 'primeng/contextmenu';
 import {DialogModule} from 'primeng/dialog';
+import {DividerModule} from 'primeng/divider';
 import {FileUploadHandlerEvent, FileUploadModule} from 'primeng/fileupload';
 import {InputGroupModule} from 'primeng/inputgroup';
 import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
 import {InputTextModule} from 'primeng/inputtext';
+import {PanelModule} from 'primeng/panel';
 import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
 import {ToastModule} from 'primeng/toast';
@@ -45,6 +47,8 @@ import {AngminService} from '../services/angmin.service';
     ContextMenuModule,
     ToastModule,
     ConfirmDialogModule,
+    PanelModule,
+    DividerModule,
   ],
   templateUrl: './server.component.html',
   styleUrl: './server.component.css',
@@ -98,16 +102,17 @@ export class ServerComponent implements OnInit {
   ];
 
   exportVisible = false;
+  state = State.Loading;
   items: Item[] = [];
   selectedItems: Item[] = [];
 
   itemsTotalLength!: number;
   exportMessage!: string;
-  lastRefresh!: Date;
+  lastError!: Error;
   subscription!: Subscription;
-  messageError!: Message[];
-  state!: State;
   selectedItem!: Item;
+
+  lastRefresh?: Date;
 
   #exportItems?: Item[];
 
@@ -139,7 +144,7 @@ export class ServerComponent implements OnInit {
         this.state = State.Loaded;
       },
       error: (error) => {
-        this.messageError = [{severity: 'error', summary: error.name, detail: error.message}];
+        this.lastError = error;
         this.state = State.Errored;
       },
     });
@@ -214,5 +219,20 @@ export class ServerComponent implements OnInit {
       accept: () => this.#deleteItems(items),
       reject: () => this.messageService.add({severity: 'info', summary: 'Delete cancelled'}),
     });
+  }
+
+  getRefreshSeverity() {
+    if (this.lastRefresh) {
+      const delta = new Date().valueOf() - this.lastRefresh.valueOf();
+      if (delta <= 30 * 1000) {
+        return 'success';
+      } else if (delta <= 60 * 1000) {
+        return 'warning';
+      } else {
+        return 'danger';
+      }
+    } else {
+      return undefined;
+    }
   }
 }

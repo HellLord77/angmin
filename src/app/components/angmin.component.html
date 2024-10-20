@@ -1,4 +1,4 @@
-@for (server of storageService.getServers(); track server.alias) {
+@for (server of angminService.getServers(); track server.alias) {
   <div>
     <a [routerLink]="server.alias">{{ server.alias }}</a>
   </div>

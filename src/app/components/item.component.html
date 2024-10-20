@@ -4,7 +4,7 @@
 
 <p-confirmDialog
   [dismissableMask]="true"
-  header="Delete datum/data"
+  header="Delete document(s)"
   icon="pi pi-trash"
   rejectButtonStyleClass="p-button-outlined"
   styleClass="w-30rem"
@@ -21,7 +21,7 @@
   <ng-template pTemplate="header">
     <h2>
       <i class="pi pi-file-export"></i>
-      Export datum/data
+      Export document(s)
     </h2>
   </ng-template>
 
@@ -61,7 +61,13 @@
   </ng-template>
 
   <ng-template pTemplate="footer">
-    <p-button (onClick)="cancelRefresh()" icon="pi pi-times" label="Cancel" severity="warning" />
+    <p-button
+      [disabled]="!lastRefresh"
+      (onClick)="cancelRefresh()"
+      icon="pi pi-times"
+      label="Cancel"
+      severity="danger"
+    />
   </ng-template>
 </p-dialog>
 
@@ -82,7 +88,16 @@
   <ng-template pTemplate="content">
     <i class="pi pi-table"></i>
     Collection: {{ item() }}
-    <p-messages [value]="messageError" />
+    <p-divider />
+    <p-panel [collapsed]="true" [toggleable]="true">
+      <ng-template pTemplate="header">
+        <div class="flex gap-2 text-red-500">
+          <i class="pi pi-times-circle"></i>
+          {{ lastError.name }}
+        </div>
+      </ng-template>
+      <p>{{ lastError.message }}</p>
+    </p-panel>
   </ng-template>
 
   <ng-template pTemplate="footer">
@@ -102,7 +117,6 @@
   [(selection)]="selectedData"
   [columns]="selectedColumns?.length ? selectedColumns : columns"
   [contextMenu]="context"
-  [lazyLoadOnInit]="false"
   [lazy]="true"
   [paginator]="true"
   [rowsPerPageOptions]="[10, 25, 50]"
@@ -119,7 +133,7 @@
   styleClass="p-datatable-gridlines p-datatable-striped"
 >
   <ng-template pTemplate="caption">
-    <p-toolbar>
+    <p-toolbar styleClass="py-0 border-noround-bottom">
       <ng-template pTemplate="start">
         <div class="flex gap-2">
           <p-fileUpload
@@ -161,24 +175,35 @@
             severity="danger"
             tooltip="All documents in selected collections will be deleted"
           />
+          <p-splitButton [disabled]="true" icon="pi pi-clone" label="Clone" severity="info" />
         </div>
       </ng-template>
     </p-toolbar>
 
-    <p-toolbar>
+    <p-toolbar styleClass="border-noround-top">
       <ng-template pTemplate="left">
-        <div
-          class="select-none"
-          [badgeDisabled]="!lastRefresh"
-          [value]="(lastRefresh | date:'shortTime')!"
-          pBadge
-        >
+        <div class="flex gap-2">
           <p-button
             [outlined]="true"
-            (onClick)="refreshData()"
-            icon="pi pi-refresh"
-            label="Refresh"
+            [routerLink]="['..']"
+            icon="pi pi-arrow-left"
+            label="Back"
+            severity="secondary"
           />
+          <div
+            class="select-none"
+            [badgeDisabled]="!lastRefresh"
+            [severity]="getRefreshSeverity()"
+            [value]="(lastRefresh | date:'shortTime')!"
+            pBadge
+          >
+            <p-button
+              [outlined]="true"
+              (onClick)="refreshData()"
+              icon="pi pi-refresh"
+              label="Refresh"
+            />
+          </div>
         </div>
       </ng-template>
 
@@ -218,7 +243,7 @@
           <p-sortIcon [field]="column" />
         </th>
       }
-      <th alignFrozen="right" pFrozenColumn></th>
+      <th class="w-1rem" alignFrozen="right" pFrozenColumn></th>
     </tr>
   </ng-template>
 
@@ -228,15 +253,16 @@
         <p-tableCheckbox [value]="datum" />
       </td>
       <td pFrozenColumn>
-        <a [routerLink]="datum.id">{{ datum.id }}</a>
+        <p-button [label]="datum.id" [link]="true" [routerLink]="datum.id" />
       </td>
       @for (column of columns; track column) {
         <td>
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input
-                class="w-full"
+                class="min-w-full"
                 [(ngModel)]="datum[column]"
+                [disabled]="isEditColumnDisabled(datum[column])"
                 (keydown.home)="$event.stopPropagation()"
                 (keydown.end)="$event.stopPropagation()"
                 pInputText
@@ -251,15 +277,25 @@
       <td alignFrozen="right" pFrozenColumn>
         <div class="flex justify-content-center gap-2 w-8rem">
           @if (editing) {
-            <p-button icon="pi pi-check" pSaveEditableRow severity="success" />
             <p-button
-              (onClick)="cancelEditData()"
+              (onClick)="saveEditData(datum)"
+              icon="pi pi-check"
+              pSaveEditableRow
+              severity="success"
+            />
+            <p-button
+              (onClick)="cancelEditData(datum)"
               icon="pi pi-times"
               pCancelEditableRow
               severity="danger"
             />
           } @else {
-            <p-button icon="pi pi-pencil" pInitEditableRow severity="warning" />
+            <p-button
+              (onClick)="initEditData(datum)"
+              icon="pi pi-pencil"
+              pInitEditableRow
+              severity="warning"
+            />
           }
         </div>
       </td>
@@ -269,7 +305,7 @@
   <ng-template pTemplate="emptymessage">
     <tr>
       <td class="text-center" colspan="100%">
-        <h4 class="p-badge-warning">No collections found</h4>
+        <h4 class="p-badge-warning">No document found</h4>
       </td>
     </tr>
   </ng-template>

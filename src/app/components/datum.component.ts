@@ -1,6 +1,6 @@
 import {Component, inject, input, OnInit} from '@angular/core';
 
-import {DatumService} from '../services/datum.service';
+import {AngminService} from '../services/angmin.service';
 
 @Component({
   selector: 'app-datum',
@@ -14,15 +14,15 @@ export class DatumComponent implements OnInit {
   item = input.required<string>();
   datum = input.required<string>();
 
-  datumService = inject(DatumService);
+  angminService = inject(AngminService);
 
-  string_ = '';
+  value = '';
 
   ngOnInit() {
     console.log(`Datum: ${this.server()}, ${this.item()}, ${this.datum()}`);
 
-    this.datumService.getString$(this.server(), this.item(), this.datum()).subscribe((string_) => {
-      this.string_ = string_;
+    this.angminService.getValue$(this.server(), this.item(), this.datum()).subscribe((value) => {
+      this.value = value;
     });
   }
 }
