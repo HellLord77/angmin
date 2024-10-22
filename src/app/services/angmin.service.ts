@@ -73,7 +73,7 @@ export class AngminService {
       if (textSpan === null) {
         return;
       }
-      const execSpan = /^ - (\d+) items $/.exec(textSpan.replaceAll(/\s+/g, ' '));
+      const execSpan = /^ - (\d+) items? $/.exec(textSpan.replaceAll(/\s+/g, ' '));
       if (execSpan === null) {
         return;
       }

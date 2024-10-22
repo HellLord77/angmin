@@ -7,15 +7,21 @@
     </p-breadcrumb>
   </ng-template>
   <ng-template pTemplate="end">
-    <div class="flex align-items-center">
+    <div class="align-items-center flex">
       <p-buttonGroup class="w-full">
-        <p-button [disabled]="scale === -2" (onClick)="decreaseScale()" icon="pi pi-minus" />
+        <p-button [disabled]="scale === -2" [icon]="PrimeIcons.MINUS" (onClick)="decreaseScale()" />
         <p-button [disabled]="true" [label]="scale.toString()" />
-        <p-button [disabled]="scale === 2" (onClick)="increaseScale()" icon="pi pi-plus" />
+        <p-button [disabled]="scale === 2" [icon]="PrimeIcons.PLUS" (onClick)="increaseScale()" />
       </p-buttonGroup>
       <p-divider layout="vertical" />
       <p-inputGroup>
-        <button class="py-2" [disabled]="true" icon="pi pi-sun" pButton type="button"></button>
+        <button
+          class="py-2"
+          [disabled]="true"
+          [icon]="PrimeIcons.SUN"
+          pButton
+          type="button"
+        ></button>
         <p-inputGroupAddon class="py-2">
           <p-inputSwitch
             [(ngModel)]="theme"
@@ -24,7 +30,13 @@
             (onChange)="updateTheme()"
           />
         </p-inputGroupAddon>
-        <button class="py-2" [disabled]="true" icon="pi pi-moon" pButton type="button"></button>
+        <button
+          class="py-2"
+          [disabled]="true"
+          [icon]="PrimeIcons.MOON"
+          pButton
+          type="button"
+        ></button>
       </p-inputGroup>
     </div>
   </ng-template>

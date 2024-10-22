@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {PrimeIcons} from 'primeng/api';
 
 @Component({
   selector: 'app-footer',
@@ -7,4 +8,6 @@ import {Component} from '@angular/core';
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.css',
 })
-export class FooterComponent {}
+export class FooterComponent {
+  protected readonly PrimeIcons = PrimeIcons;
+}

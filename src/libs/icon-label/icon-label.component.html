@@ -1,9 +1,9 @@
-<div class="flex align-items-center gap-2" [class]="styleClass()">
+<div class="container align-items-center" [class]="styleClass()">
   @if (iconLeft()) {
-    <i [class]="iconLeft()"></i>
+    <i [class]="iconLeft()" [ngClass]="iconStyleClass() || styleClass()"></i>
   }
   {{ label() }}
   @if (iconRight()) {
-    <i [class]="iconRight()"></i>
+    <i [class]="iconRight()" [ngClass]="iconStyleClass() || styleClass()"></i>
   }
 </div>

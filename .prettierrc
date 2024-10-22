@@ -8,5 +8,7 @@
   "quoteProps": "preserve",
   "bracketSpacing": false,
 
-  "plugins": ["prettier-plugin-organize-attributes"]
+  "plugins": [
+    "prettier-plugin-organize-attributes"
+  ]
 }

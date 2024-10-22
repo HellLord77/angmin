@@ -51,6 +51,7 @@ export class HeaderComponent implements OnInit {
 
   navigationMenu?: MenuItem[];
 
+  protected readonly PrimeIcons = PrimeIcons;
   protected readonly Theme = Theme;
 
   ngOnInit() {

@@ -24,6 +24,7 @@ import {ToolbarModule} from 'primeng/toolbar';
 import {Subscription} from 'rxjs';
 
 import {IconLabelComponent} from '../../libs/icon-label/icon-label.component';
+import {IconTableHeaderComponent} from '../../libs/icon-table-header/icon-table-header.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
 import {State} from '../enums/state';
@@ -57,6 +58,7 @@ import {AngminService} from '../services/angmin.service';
     FormsModule,
     ProgressSpinnerModule,
     IconLabelComponent,
+    IconTableHeaderComponent,
   ],
   templateUrl: './server.component.html',
   styleUrl: './server.component.css',

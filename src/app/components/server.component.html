@@ -9,14 +9,14 @@
 >
   <ng-template pTemplate="header">
     <app-icon-label
-      class="p-dialog-title"
       [icon]="PrimeIcons.HOURGLASS"
       label="Loading collections..."
+      styleClass="p-dialog-title"
     />
   </ng-template>
 
   <ng-template pTemplate="content">
-    <div class="container flex-column align-items-center">
+    <div class="flex-column align-items-center container">
       <p-progressSpinner />
       <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
     </div>
@@ -42,22 +42,22 @@
 >
   <ng-template pTemplate="header">
     <app-icon-label
-      class="p-dialog-title"
       [icon]="PrimeIcons.EXCLAMATION_TRIANGLE"
       label="An error occurred"
+      styleClass="p-dialog-title"
     />
   </ng-template>
 
   <ng-template pTemplate="content">
-    <div class="container flex-column">
+    <div class="flex-column container">
       <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
       <div></div>
       <p-panel [collapsed]="true" [toggleable]="true" header="Error details">
         <ng-template pTemplate="content">
           <app-icon-label
             class="text-danger"
-            [label]="lastError.name"
             [icon]="PrimeIcons.TIMES_CIRCLE"
+            [label]="lastError.name"
           />
           <div class="pl-4">
             {{ lastError.message }}
@@ -69,10 +69,10 @@
 
   <ng-template pTemplate="footer">
     <p-button
-      [outlined]="true"
       [icon]="PrimeIcons.ARROW_LEFT"
-      routerLink="../"
+      [outlined]="true"
       label="Back"
+      routerLink="../"
       severity="secondary"
     />
     <p-button
@@ -94,9 +94,9 @@
 >
   <ng-template pTemplate="header">
     <app-icon-label
-      class="p-dialog-title"
       [icon]="PrimeIcons.FILE_EXPORT"
       label="Choose collections export format"
+      styleClass="p-dialog-title"
     />
   </ng-template>
 
@@ -110,7 +110,7 @@
       styleClass="w-full"
     >
       <ng-template let-item pTemplate="item">
-        <app-icon-label [label]="item.name" [icon]="PrimeIcons.TABLE" />
+        <app-icon-label [icon]="PrimeIcons.TABLE" [label]="item.name" />
       </ng-template>
     </p-chips>
   </ng-template>
@@ -143,15 +143,15 @@
 >
   <ng-template pTemplate="header">
     <app-icon-label
-      class="p-dialog-title"
       [icon]="PrimeIcons.MINUS_CIRCLE"
       label="Confirm collections delete"
+      styleClass="p-dialog-title"
     />
   </ng-template>
 
   <ng-template pTemplate="message">
     <p-chips
-      class="px-4 w-full"
+      class="w-full px-4"
       [(ngModel)]="deleteItems"
       [autofocus]="true"
       [disabled]="deleteItems.length === 1"
@@ -159,7 +159,7 @@
       styleClass="w-full"
     >
       <ng-template let-item pTemplate="item">
-        <app-icon-label [label]="item.name" [icon]="PrimeIcons.TABLE" />
+        <app-icon-label [icon]="PrimeIcons.TABLE" [label]="item.name" />
       </ng-template>
     </p-chips>
   </ng-template>
@@ -186,18 +186,18 @@
         <div class="container">
           <p-fileUpload
             [auto]="true"
+            [chooseIcon]="PrimeIcons.DOWNLOAD"
             [customUpload]="true"
             (uploadHandler)="handleImportItems($event)"
             accept=".csv,.json"
-            chooseIcon="pi pi-download"
             chooseLabel="Import"
             mode="basic"
           />
           <p-splitButton
             [buttonDisabled]="!selectedItems.length"
+            [icon]="PrimeIcons.UPLOAD"
             [model]="exportMenu"
             (onClick)="chooseExportItems(ActionType.Selection)"
-            icon="pi pi-upload"
             label="Export"
             severity="help"
           />
@@ -205,25 +205,31 @@
       </ng-template>
 
       <ng-template pTemplate="center">
-        <h1 class="my-0">
-          <i class="pi pi-database text-2xl"></i>
-          Database: {{ server() }}
-        </h1>
+        <app-icon-label
+          [icon]="PrimeIcons.DATABASE"
+          label="Database: {{ server() }}"
+          styleClass="header"
+        />
       </ng-template>
 
       <ng-template pTemplate="end">
         <div class="container">
-          <p-button [disabled]="true" icon="pi pi-plus" label="Add" severity="success" />
+          <p-button [disabled]="true" [icon]="PrimeIcons.PLUS" label="Add" severity="success" />
           <p-splitButton
             [buttonDisabled]="!selectedItems.length"
+            [icon]="PrimeIcons.TRASH"
             [model]="deleteMenu"
             (onClick)="confirmDeleteItems(ActionType.Selection)"
-            icon="pi pi-trash"
             label="Delete"
             severity="danger"
             tooltip="All documents in selected collections will be deleted"
           />
-          <p-splitButton [disabled]="true" icon="pi pi-clone" label="Clone" severity="info" />
+          <p-splitButton
+            [disabled]="true"
+            [icon]="PrimeIcons.CLONE"
+            label="Clone"
+            severity="info"
+          />
         </div>
       </ng-template>
     </p-toolbar>
@@ -232,10 +238,10 @@
       <ng-template pTemplate="left">
         <div class="container">
           <p-button
+            [icon]="PrimeIcons.ARROW_LEFT"
             [outlined]="true"
-            routerLink="../"
-            icon="pi pi-arrow-left"
             label="Back"
+            routerLink="../"
             severity="secondary"
           />
           <div
@@ -246,9 +252,9 @@
             pBadge
           >
             <p-button
+              [icon]="PrimeIcons.REFRESH"
               [outlined]="true"
               (onClick)="refreshItems()"
-              icon="pi pi-refresh"
               label="Refresh"
             />
           </div>
@@ -259,7 +265,7 @@
         <div class="container">
           <p-inputGroup>
             <p-inputGroupAddon>
-              <app-icon-label icon="pi pi-search" />
+              <app-icon-label [icon]="PrimeIcons.SEARCH" />
             </p-inputGroupAddon>
             <input
               #search
@@ -270,17 +276,17 @@
             />
             <button
               [disabled]="!search.value"
+              [icon]="PrimeIcons.TIMES"
               (click)="clearSearch()"
-              icon="pi pi-times"
               pButton
               severity="danger"
               type="button"
             ></button>
           </p-inputGroup>
           <p-button
+            [icon]="PrimeIcons.FILTER_SLASH"
             [outlined]="true"
             (onClick)="resetTable()"
-            icon="pi pi-filter-slash"
             label="Clear"
           />
         </div>
@@ -294,32 +300,28 @@
         <p-tableHeaderCheckbox />
       </th>
       <th pFrozenColumn pSortableColumn="name">
-        <i class="pi pi-table"></i> Collection
-        <p-sortIcon field="name" />
+        <app-icon-table-header [icon]="PrimeIcons.TABLE" label="Collection" sortField="name" />
       </th>
       <th pSortableColumn="length">
-        <i class="pi pi-hashtag"></i> Objects
-        <p-sortIcon field="length" />
+        <app-icon-table-header [icon]="PrimeIcons.HASHTAG" label="Objects" sortField="length" />
       </th>
       <th class="w-1" pSortableColumn="length">
-        <i class="pi pi-percentage"></i> Objects
-        <p-sortIcon field="length" />
+        <app-icon-table-header
+          [icon]="PrimeIcons.PERCENTAGE"
+          label="Percentage"
+          sortField="length"
+        />
       </th>
     </tr>
   </ng-template>
 
   <ng-template let-item pTemplate="body">
-    <tr [pContextMenuRow]="item">
+    <tr [pContextMenuRow]="item" [pSelectableRow]="item">
       <td pFrozenColumn>
         <p-tableCheckbox [value]="item" />
       </td>
       <td pFrozenColumn>
-        <p-button
-          [label]="item.name"
-          [link]="true"
-          [routerLink]="item.name"
-          styleClass="py-0"
-        ></p-button>
+        <p-button [label]="item.name" [link]="true" [routerLink]="item.name" styleClass="py-0" />
       </td>
       <td>
         {{ item.length | number }}
@@ -332,8 +334,13 @@
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td class="text-center" colspan="100%">
-        <h4 class="p-badge-warning">No collection found</h4>
+      <td colspan="100%">
+        <app-icon-label
+          class="m-auto block w-fit"
+          [icon]="PrimeIcons.SEARCH_MINUS"
+          label="No collection found"
+          styleClass="header"
+        />
       </td>
     </tr>
   </ng-template>

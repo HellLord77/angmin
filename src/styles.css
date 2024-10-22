@@ -17,10 +17,10 @@ td {
   color: var(--red-500);
 }
 
-/*.header {*/
-/*  font-size: 1.25rem;*/
-/*  font-weight: bold;*/
-/*}*/
+.header {
+  font-size: 2rem;
+  font-weight: bold;
+}
 
 .container {
   display: flex;
