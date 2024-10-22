@@ -52,7 +52,11 @@
     <div class="flex-column container">
       <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
       <div></div>
-      <p-panel [collapsed]="true" [toggleable]="true" header="Error details">
+      <p-panel [collapsed]="true" [toggleable]="true">
+        <ng-template pTemplate="header">
+          <app-icon-label class="p-panel-title" [icon]="PrimeIcons.CODE" label="Error details" />
+        </ng-template>
+
         <ng-template pTemplate="content">
           <app-icon-label
             class="text-danger"
@@ -103,9 +107,9 @@
   <ng-template pTemplate="content">
     <p-chips
       class="w-full"
-      [(ngModel)]="exportItems"
+      [(ngModel)]="taskItems"
       [autofocus]="true"
-      [disabled]="exportItems.length === 1"
+      [disabled]="taskItems.length === 1"
       (onFocus)="removeChipsInput($event)"
       styleClass="w-full"
     >
@@ -132,38 +136,17 @@
   </ng-template>
 </p-dialog>
 
-<p-confirmDialog
-  [dismissableMask]="true"
+<app-confirm-dialog
+  [(items)]="taskItems"
   [icon]="PrimeIcons.TRASH"
+  [headerIcon]="PrimeIcons.MINUS_CIRCLE"
+  [itemIcon]="PrimeIcons.FILE"
   acceptButtonStyleClass="p-button-danger"
   acceptLabel="Delete"
-  rejectButtonStyleClass="p-button-outlined"
   rejectLabel="Cancel"
-  styleClass="w-6"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.MINUS_CIRCLE"
-      label="Confirm collections delete"
-      styleClass="p-dialog-title"
-    />
-  </ng-template>
-
-  <ng-template pTemplate="message">
-    <p-chips
-      class="w-full px-4"
-      [(ngModel)]="deleteItems"
-      [autofocus]="true"
-      [disabled]="deleteItems.length === 1"
-      (onFocus)="removeChipsInput($event)"
-      styleClass="w-full"
-    >
-      <ng-template let-item pTemplate="item">
-        <app-icon-label [icon]="PrimeIcons.TABLE" [label]="item.name" />
-      </ng-template>
-    </p-chips>
-  </ng-template>
-</p-confirmDialog>
+  headerLabel="Confirm documents delete"
+  itemField="id"
+/>
 
 <p-contextMenu #context [model]="contextMenu" />
 
@@ -222,7 +205,6 @@
             (onClick)="confirmDeleteItems(ActionType.Selection)"
             label="Delete"
             severity="danger"
-            tooltip="All documents in selected collections will be deleted"
           />
           <p-splitButton
             [disabled]="true"

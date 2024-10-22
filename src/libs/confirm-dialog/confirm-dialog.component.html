@@ -1,0 +1,31 @@
+<p-confirmDialog
+  [acceptButtonStyleClass]="acceptButtonStyleClass()"
+  [acceptLabel]="acceptLabel()"
+  [dismissableMask]="true"
+  [icon]="icon()"
+  [rejectLabel]="rejectLabel()"
+  rejectButtonStyleClass="p-button-outlined"
+  styleClass="w-6"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label [icon]="headerIcon()" [label]="headerLabel()" styleClass="p-dialog-title" />
+  </ng-template>
+
+  <ng-template pTemplate="message">
+    <div class="container w-full">
+      <p-chips
+        class="w-full px-4"
+        [(ngModel)]="items"
+        [autofocus]="true"
+        [disabled]="items.length === 1"
+        (onFocus)="removeChipsInput($event)"
+        styleClass="w-full"
+      >
+        <ng-template let-item pTemplate="item">
+          <app-icon-label [icon]="itemIcon()" [label]="item[itemField()]" />
+        </ng-template>
+      </p-chips>
+      <ng-content />
+    </div>
+  </ng-template>
+</p-confirmDialog>

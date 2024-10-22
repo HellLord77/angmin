@@ -54,7 +54,11 @@
       <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
       <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
       <div></div>
-      <p-panel [collapsed]="true" [toggleable]="true" header="Error details">
+      <p-panel [collapsed]="true" [toggleable]="true">
+        <ng-template pTemplate="header">
+          <app-icon-label class="p-panel-title" [icon]="PrimeIcons.CODE" label="Error details" />
+        </ng-template>
+
         <ng-template pTemplate="content">
           <app-icon-label
             class="text-danger"
@@ -106,9 +110,9 @@
     <div class="container">
       <p-chips
         class="w-full"
-        [(ngModel)]="exportData"
+        [(ngModel)]="taskData"
         [autofocus]="true"
-        [disabled]="exportData.length === 1"
+        [disabled]="taskData.length === 1"
         (onFocus)="removeChipsInput($event)"
         styleClass="w-full"
       >
@@ -138,42 +142,60 @@
   </ng-template>
 </p-dialog>
 
-<p-confirmDialog
-  [dismissableMask]="true"
+<app-confirm-dialog
+  [(items)]="taskData"
+  [headerIcon]="PrimeIcons.MINUS_CIRCLE"
   [icon]="PrimeIcons.TRASH"
+  [itemIcon]="PrimeIcons.FILE"
   acceptButtonStyleClass="p-button-danger"
   acceptLabel="Delete"
-  rejectButtonStyleClass="p-button-outlined"
+  headerLabel="Confirm documents delete"
+  itemField="id"
   rejectLabel="Cancel"
-  styleClass="w-6"
+/>
+
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [modal]="true"
+  [visible]="!task.closed"
+  styleClass="w-30rem"
 >
   <ng-template pTemplate="header">
     <app-icon-label
-      [icon]="PrimeIcons.MINUS_CIRCLE"
-      label="Confirm documents delete"
+      [icon]="PrimeIcons.HAMMER"
+      label="Deleting documents..."
       styleClass="p-dialog-title"
     />
   </ng-template>
 
-  <ng-template pTemplate="message">
-    <div class="container w-full">
-      <p-chips
-        class="w-full px-4"
-        [(ngModel)]="deleteData"
-        [autofocus]="true"
-        [disabled]="deleteData.length === 1"
-        (onFocus)="removeChipsInput($event)"
-        styleClass="w-full"
-      >
-        <ng-template let-item pTemplate="item">
-          <app-icon-label [icon]="PrimeIcons.FILE" [label]="item.id" />
-        </ng-template>
-      </p-chips>
-      <!-- TODO: empty deleteData -->
-      <!-- dependent? -->
+  <ng-template pTemplate="content">
+    <div class="flex-column align-items-center container">
+      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
+      <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
+      <app-icon-label
+        [icon]="PrimeIcons.FILE"
+        label="Document: {{ taskDatum ? taskDatum.id : '...' }}"
+      />
     </div>
+    <p-divider class="flex flex-column align-items-center" styleClass="w-9" />
+    <p-progressBar [value]="taskValue" />
+    <app-icon-label
+      class="flex flex-column align-items-center"
+      [icon]="PrimeIcons.TRASH"
+      label="{{ taskComplete | number }}/{{ taskTotal | number }}"
+    />
   </ng-template>
-</p-confirmDialog>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      [icon]="PrimeIcons.TIMES"
+      (onClick)="cancelDeleteData()"
+      label="Cancel"
+      severity="danger"
+    />
+  </ng-template>
+</p-dialog>
 
 <p-contextMenu #context [model]="contextMenu" />
 
@@ -240,7 +262,6 @@
             (onClick)="confirmDeleteData(ActionType.Selection)"
             label="Delete"
             severity="danger"
-            tooltip="All documents in selected collections will be deleted"
           />
           <p-splitButton
             [disabled]="true"
@@ -365,20 +386,20 @@
           @if (editing) {
             <p-button
               [icon]="PrimeIcons.CHECK"
-              (onClick)="saveEditData(datum)"
+              (onClick)="saveEditDatum(datum)"
               pSaveEditableRow
               severity="success"
             />
             <p-button
               [icon]="PrimeIcons.TIMES"
-              (onClick)="cancelEditData(datum)"
+              (onClick)="cancelEditDatum(datum)"
               pCancelEditableRow
               severity="danger"
             />
           } @else {
             <p-button
               [icon]="PrimeIcons.PENCIL"
-              (onClick)="initEditData(datum)"
+              (onClick)="initEditDatum(datum)"
               pInitEditableRow
               severity="warning"
             />

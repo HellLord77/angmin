@@ -1,8 +1,7 @@
 import {inject, Injectable} from '@angular/core';
-import {forEach} from 'lodash';
-import {Memoize} from 'lodash-decorators';
+import {forEach} from 'lodash-es';
 import {SortMeta} from 'primeng/api';
-import {catchError, map, throwError} from 'rxjs';
+import {catchError, EMPTY, expand, map, mergeMap, throwError} from 'rxjs';
 
 import {UndefinedAlias} from '../errors/undefined-alias.error';
 import {UnparsableHtml} from '../errors/unparsable-html.error';
@@ -34,7 +33,7 @@ export class AngminService {
       }),
       map((html: string) => {
         try {
-          return this.getItems(html);
+          return this.#getItems(html);
         } catch {
           throw new UnparsableHtml(html);
         }
@@ -42,8 +41,7 @@ export class AngminService {
     );
   }
 
-  @Memoize
-  private getItems(html: string): Item[] {
+  #getItems(html: string): Item[] {
     const items: Item[] = [];
 
     const parser = new DOMParser();
@@ -99,6 +97,22 @@ export class AngminService {
     return this.networkService.getDataPaginated$(server, name, page, per_page, sort);
   }
 
+  iterData$(alias: string, name: string) {
+    const server = this.storageService.getServer(alias);
+    if (server === undefined) {
+      return throwError(() => new UndefinedAlias(alias));
+    }
+
+    return this.networkService.getDataPaginated$(server, name, 1, 100, '').pipe(
+      expand((paginatedData) =>
+        paginatedData.next
+          ? this.networkService.getDataPaginated$(server, name, paginatedData.next, 100, '')
+          : EMPTY,
+      ),
+      mergeMap((paginatedData) => paginatedData.data),
+    );
+  }
+
   getValue$(alias: string, name: string, id: string) {
     const server = this.storageService.getServer(alias);
     if (server === undefined) {
@@ -108,5 +122,14 @@ export class AngminService {
     return this.networkService
       .getDatum$(server, name, id)
       .pipe(map((datum) => JSON.stringify(datum)));
+  }
+
+  deleteValue$(alias: string, name: string, id: string) {
+    const server = this.storageService.getServer(alias);
+    if (server === undefined) {
+      return throwError(() => new UndefinedAlias(alias));
+    }
+
+    return this.networkService.deleteDatum(server, name, id);
   }
 }

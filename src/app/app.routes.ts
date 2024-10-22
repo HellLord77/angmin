@@ -10,4 +10,5 @@ export const routes: Routes = [
   {path: ':server', component: ServerComponent},
   {path: ':server/:item', component: ItemComponent},
   {path: ':server/:item/:datum', component: DatumComponent},
+  {path: '**', redirectTo: ''},
 ];

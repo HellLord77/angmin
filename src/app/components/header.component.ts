@@ -1,7 +1,7 @@
-import {Component, ElementRef, inject, input, OnInit} from '@angular/core';
+import {Component, inject, input, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {NavigationEnd, Router} from '@angular/router';
-import {filter} from 'lodash';
+import {filter} from 'lodash-es';
 import {MenuItem, PrimeIcons} from 'primeng/api';
 import {BreadcrumbModule} from 'primeng/breadcrumb';
 import {Button, ButtonDirective} from 'primeng/button';
@@ -40,7 +40,6 @@ export class HeaderComponent implements OnInit {
   item = input<string>();
   datum = input<string>();
 
-  elementRef = inject(ElementRef);
   router = inject(Router);
   visualService = inject(VisualService);
 

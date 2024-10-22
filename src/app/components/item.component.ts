@@ -1,16 +1,16 @@
-import {DatePipe} from '@angular/common';
-import {Component, inject, input, OnInit, viewChild} from '@angular/core';
+import {DatePipe, DecimalPipe} from '@angular/common';
+import {Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {pluralize} from 'inflection';
-import {findIndex, flatten, keys, map} from 'lodash';
+import {findIndex, flatten, keys, map} from 'lodash-es';
 import {ConfirmationService, MenuItem, MessageService, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
 import {ChipsModule} from 'primeng/chips';
-import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {ContextMenuModule} from 'primeng/contextmenu';
 import {DialogModule} from 'primeng/dialog';
+import {DividerModule} from 'primeng/divider';
 import {FileUploadHandlerEvent, FileUploadModule} from 'primeng/fileupload';
 import {InputGroupModule} from 'primeng/inputgroup';
 import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
@@ -21,8 +21,9 @@ import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
 import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
-import {Subscription} from 'rxjs';
+import {concatMap, from, NEVER, Observable, Subscription} from 'rxjs';
 
+import {ConfirmDialogComponent} from '../../libs/confirm-dialog/confirm-dialog.component';
 import {IconLabelComponent} from '../../libs/icon-label/icon-label.component';
 import {IconTableHeaderComponent} from '../../libs/icon-table-header/icon-table-header.component';
 import {ActionType} from '../enums/action-type';
@@ -49,7 +50,6 @@ import {AngminService} from '../services/angmin.service';
     ToolbarModule,
     ToastModule,
     ContextMenuModule,
-    ConfirmDialogModule,
     MultiSelectModule,
     FormsModule,
     PanelModule,
@@ -57,12 +57,15 @@ import {AngminService} from '../services/angmin.service';
     IconLabelComponent,
     ProgressSpinnerModule,
     IconTableHeaderComponent,
+    ConfirmDialogComponent,
+    DecimalPipe,
+    DividerModule,
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
   providers: [MessageService, ConfirmationService],
 })
-export class ItemComponent implements OnInit {
+export class ItemComponent implements OnDestroy {
   server = input.required<string>();
   item = input.required<string>();
 
@@ -105,7 +108,6 @@ export class ItemComponent implements OnInit {
       label: 'Delete all',
       icon: PrimeIcons.TRASH,
       command: () => this.confirmDeleteData(ActionType.Global),
-      tooltip: 'All documents will be deleted',
     },
   ];
 
@@ -114,6 +116,12 @@ export class ItemComponent implements OnInit {
   lastError!: Error;
   lastRefresh?: Date;
   refreshTask!: Subscription;
+
+  task: Subscription = NEVER.subscribe();
+  taskTotal = 0;
+  taskComplete = 0;
+  taskDatum?: Datum;
+  protected taskValue = 0;
 
   columns: string[] = [];
   selectedColumns: string[] = [];
@@ -129,8 +137,7 @@ export class ItemComponent implements OnInit {
     data: [],
   };
   selectedData: Datum[] = [];
-  exportData: Datum[] = [];
-  deleteData: Datum[] = [];
+  taskData: Datum[] = [];
   readonly #clonedData = new Map<string, Datum>();
   contextDatum!: Datum;
 
@@ -139,8 +146,13 @@ export class ItemComponent implements OnInit {
   protected readonly ActionType = ActionType;
   protected readonly ExportType = ExportType;
 
-  ngOnInit() {
-    console.log(`Item: ${this.server()}, ${this.item()}`);
+  constructor() {
+    this.task.unsubscribe();
+  }
+
+  ngOnDestroy() {
+    this.refreshTask?.unsubscribe();
+    this.task.unsubscribe();
   }
 
   refreshData() {
@@ -205,11 +217,11 @@ export class ItemComponent implements OnInit {
 
   chooseExportData(actionType: ActionType) {
     if (actionType === ActionType.Context) {
-      this.exportData = [this.contextDatum];
+      this.taskData = [this.contextDatum];
     } else if (actionType === ActionType.Selection) {
-      this.exportData = this.selectedData;
+      this.taskData = this.selectedData;
     } else {
-      this.exportData = [];
+      this.taskData = [];
     }
 
     this.chooseExportVisible = true;
@@ -217,16 +229,16 @@ export class ItemComponent implements OnInit {
 
   chosenExportData(exportType: ExportType) {
     this.chooseExportVisible = false;
-    console.log(`Export data: .${exportType} ${JSON.stringify(this.exportData)}`);
+    console.log(`Export data: .${exportType} ${JSON.stringify(this.taskData)}`);
   }
 
   confirmDeleteData(actionType: ActionType) {
     if (actionType === ActionType.Context) {
-      this.deleteData = [this.contextDatum];
+      this.taskData = [this.contextDatum];
     } else if (actionType === ActionType.Selection) {
-      this.deleteData = this.selectedData;
+      this.taskData = this.selectedData;
     } else {
-      this.deleteData = [];
+      this.taskData = [];
     }
 
     this.confirmationService.confirm({
@@ -237,23 +249,62 @@ export class ItemComponent implements OnInit {
   }
 
   acceptDeleteData() {
-    console.log(`Delete data: ${JSON.stringify(this.deleteData)}`);
+    let taskData$: Observable<Datum>;
+    if (this.taskData.length) {
+      this.taskTotal = this.taskData.length;
+      taskData$ = from(this.taskData);
+    } else {
+      this.taskTotal = this.paginatedData.items;
+      taskData$ = this.angminService.iterData$(this.server(), this.item());
+    }
+
+    this.taskComplete = 0;
+    this.taskValue = 0;
+    this.taskDatum = undefined;
+    this.task = taskData$
+      .pipe(
+        concatMap((datum) => this.angminService.deleteValue$(this.server(), this.item(), datum.id)),
+      )
+      .subscribe({
+        next: (datum) => {
+          this.taskDatum = datum;
+          this.taskValue = Math.ceil((++this.taskComplete / this.taskTotal) * 100);
+        },
+        complete: () => this.completeDeleteData(),
+      });
   }
 
   rejectDeleteData() {
-    this.deleteData = [];
     this.messageService.add({severity: 'info', summary: 'Delete cancelled'});
   }
 
-  initEditData(datum: Datum) {
+  completeDeleteData() {
+    this.refreshData();
+    this.messageService.add({
+      severity: this.taskComplete === this.taskTotal ? 'success' : 'warn',
+      summary: 'Delete completed',
+      detail: `Deleted data #: ${this.taskComplete}`,
+    });
+  }
+
+  cancelDeleteData() {
+    this.task.unsubscribe();
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Delete cancelled',
+      detail: `Deleted data #: ${this.taskComplete}/${this.taskTotal}`,
+    });
+  }
+
+  initEditDatum(datum: Datum) {
     this.#clonedData.set(datum.id, {...datum});
   }
 
-  saveEditData(datum: Datum) {
+  saveEditDatum(datum: Datum) {
     console.log(`Save data: ${JSON.stringify(datum)}`);
   }
 
-  cancelEditData(datum: Datum) {
+  cancelEditDatum(datum: Datum) {
     const index = findIndex(this.paginatedData.data, {id: datum.id});
     this.paginatedData.data[index] = this.#clonedData.get(datum.id)!;
     this.#clonedData.delete(datum.id);
@@ -275,12 +326,12 @@ export class ItemComponent implements OnInit {
     }
   }
 
-  removeChipsInput(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    inputElement.remove();
-  }
-
   isEditColumnDisabled(value: unknown) {
     return typeof value !== 'string';
+  }
+
+  protected removeChipsInput(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    inputElement.remove();
   }
 }

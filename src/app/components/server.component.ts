@@ -1,13 +1,12 @@
 import {DatePipe, DecimalPipe, PercentPipe} from '@angular/common';
-import {Component, ElementRef, inject, input, OnInit, viewChild} from '@angular/core';
+import {Component, ElementRef, inject, input, OnDestroy, OnInit, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {map, sum} from 'lodash';
+import {map, sum} from 'lodash-es';
 import {ConfirmationService, MenuItem, MessageService, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
 import {ChipsModule} from 'primeng/chips';
-import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {ContextMenuModule} from 'primeng/contextmenu';
 import {DialogModule} from 'primeng/dialog';
 import {DividerModule} from 'primeng/divider';
@@ -23,6 +22,7 @@ import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
 import {Subscription} from 'rxjs';
 
+import {ConfirmDialogComponent} from '../../libs/confirm-dialog/confirm-dialog.component';
 import {IconLabelComponent} from '../../libs/icon-label/icon-label.component';
 import {IconTableHeaderComponent} from '../../libs/icon-table-header/icon-table-header.component';
 import {ActionType} from '../enums/action-type';
@@ -51,7 +51,6 @@ import {AngminService} from '../services/angmin.service';
     DialogModule,
     ContextMenuModule,
     ToastModule,
-    ConfirmDialogModule,
     PanelModule,
     DividerModule,
     ChipsModule,
@@ -59,12 +58,13 @@ import {AngminService} from '../services/angmin.service';
     ProgressSpinnerModule,
     IconLabelComponent,
     IconTableHeaderComponent,
+    ConfirmDialogComponent,
   ],
   templateUrl: './server.component.html',
   styleUrl: './server.component.css',
   providers: [MessageService, ConfirmationService],
 })
-export class ServerComponent implements OnInit {
+export class ServerComponent implements OnInit, OnDestroy {
   server = input.required<string>();
 
   activatedRoute = inject(ActivatedRoute);
@@ -107,7 +107,6 @@ export class ServerComponent implements OnInit {
       label: 'Delete all',
       icon: PrimeIcons.TRASH,
       command: () => this.confirmDeleteItems(ActionType.Global),
-      tooltip: 'All documents in all collections will be deleted',
     },
   ];
 
@@ -119,8 +118,7 @@ export class ServerComponent implements OnInit {
 
   items: Item[] = [];
   selectedItems: Item[] = [];
-  exportItems: Item[] = [];
-  deleteItems: Item[] = [];
+  taskItems: Item[] = [];
   contextItem!: Item;
 
   itemsTotalLength!: number;
@@ -131,9 +129,11 @@ export class ServerComponent implements OnInit {
   protected readonly ExportType = ExportType;
 
   ngOnInit() {
-    console.log(`Server: ${this.server()}`);
-
     this.refreshItems();
+  }
+
+  ngOnDestroy() {
+    this.refreshTask?.unsubscribe();
   }
 
   refreshItems() {
@@ -189,11 +189,11 @@ export class ServerComponent implements OnInit {
 
   chooseExportItems(actionType: ActionType) {
     if (actionType === ActionType.Context) {
-      this.exportItems = [this.contextItem];
+      this.taskItems = [this.contextItem];
     } else if (actionType === ActionType.Selection) {
-      this.exportItems = [...this.selectedItems];
+      this.taskItems = [...this.selectedItems];
     } else {
-      this.exportItems = [...this.items];
+      this.taskItems = [...this.items];
     }
 
     this.chooseExportVisible = true;
@@ -201,16 +201,16 @@ export class ServerComponent implements OnInit {
 
   chosenExportItems(exportType: ExportType) {
     this.chooseExportVisible = false;
-    console.log(`Export items: .${exportType} ${JSON.stringify(this.exportItems)}`);
+    console.log(`Export items: .${exportType} ${JSON.stringify(this.taskItems)}`);
   }
 
   confirmDeleteItems(actionType: ActionType) {
     if (actionType === ActionType.Context) {
-      this.deleteItems = [this.contextItem];
+      this.taskItems = [this.contextItem];
     } else if (actionType === ActionType.Selection) {
-      this.deleteItems = [...this.selectedItems];
+      this.taskItems = [...this.selectedItems];
     } else {
-      this.deleteItems = [...this.items];
+      this.taskItems = [...this.items];
     }
 
     this.confirmationService.confirm({
@@ -221,11 +221,10 @@ export class ServerComponent implements OnInit {
   }
 
   acceptDeleteItems() {
-    console.log(`Delete items: ${JSON.stringify(this.deleteItems)}`);
+    console.log(`Delete items: ${JSON.stringify(this.taskItems)}`);
   }
 
   rejectDeleteItems() {
-    this.deleteItems = [];
     this.messageService.add({severity: 'info', summary: 'Delete cancelled'});
   }
 
@@ -244,7 +243,7 @@ export class ServerComponent implements OnInit {
     }
   }
 
-  removeChipsInput(event: Event) {
+  protected removeChipsInput(event: Event) {
     const inputElement = event.target as HTMLInputElement;
     inputElement.remove();
   }

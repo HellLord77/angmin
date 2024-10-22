@@ -30,10 +30,6 @@ export class NetworkService {
     return `${server.scheme}://${credentials}${server.hostname}:${server.port}${pathname}`;
   }
 
-  headServer$(server: Server) {
-    return this.httpClient.head(this.#getUrl(server));
-  }
-
   getServer$(server: Server) {
     return this.httpClient.get(this.#getUrl(server), {responseType: 'text'});
   }
@@ -52,5 +48,9 @@ export class NetworkService {
 
   getDatum$(server: Server, name: string, id: string) {
     return this.httpClient.get<Datum>(this.#getUrl(server, [name, id]));
+  }
+
+  deleteDatum(server: Server, name: string, id: string) {
+    return this.httpClient.delete<Datum>(this.#getUrl(server, [name, id]));
   }
 }
