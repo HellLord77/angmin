@@ -1,0 +1,4 @@
+p-chips::ng-deep ul {
+  width: 100%;
+  cursor: unset;
+}

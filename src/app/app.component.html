@@ -1,20 +1,8 @@
-<div class="flex justify-content-center">
-  <div class="flex flex-column gap-2 w-full">
-    <app-header class="h-6rem" />
-    <div class="border-3 border-round border-primary" style="height: 88vh">
-      <router-outlet />
-    </div>
+<div class="container flex-column justify-content-start p-2 w-full h-screen">
+  <app-header class="h-5rem" />
+  <div class="border-3 border-round border-primary flex-grow-1 h-30rem">
+    <router-outlet />
   </div>
 </div>
 
-<p-sidebar
-  [modal]="false"
-  [style]="{height: 'max-content', background: 'unset'}"
-  [visible]="true"
-  position="bottom"
-  styleClass="border-none shadow-none"
->
-  <ng-template pTemplate="headless">
-    <app-footer class="p-2 m-2 border-round shadow-5" />
-  </ng-template>
-</p-sidebar>
+<app-footer class="p-2 m-4 border-round shadow-5 fixed left-0 bottom-0" />

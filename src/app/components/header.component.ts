@@ -4,9 +4,11 @@ import {NavigationEnd, Router} from '@angular/router';
 import {filter} from 'lodash';
 import {MenuItem, PrimeIcons} from 'primeng/api';
 import {BreadcrumbModule} from 'primeng/breadcrumb';
-import {Button} from 'primeng/button';
+import {Button, ButtonDirective} from 'primeng/button';
 import {ButtonGroupModule} from 'primeng/buttongroup';
 import {DividerModule} from 'primeng/divider';
+import {InputGroupModule} from 'primeng/inputgroup';
+import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
 import {InputSwitchModule} from 'primeng/inputswitch';
 import {TagModule} from 'primeng/tag';
 import {ToolbarModule} from 'primeng/toolbar';
@@ -26,6 +28,9 @@ import {VisualService} from '../services/visual.service';
     Button,
     ButtonGroupModule,
     DividerModule,
+    InputGroupModule,
+    InputGroupAddonModule,
+    ButtonDirective,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
@@ -84,7 +89,12 @@ export class HeaderComponent implements OnInit {
   decreaseScale() {
     this.visualService.setScale(--this.scale);
   }
+
   increaseScale() {
     this.visualService.setScale(++this.scale);
+  }
+
+  updateTheme() {
+    this.visualService.setTheme(this.theme);
   }
 }

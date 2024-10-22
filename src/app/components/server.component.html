@@ -1,51 +1,5 @@
 <p-toast />
 
-<p-contextMenu #context [model]="contextMenu" />
-
-<p-confirmDialog
-  [dismissableMask]="true"
-  header="Delete collection(s)"
-  icon="pi pi-trash"
-  rejectButtonStyleClass="p-button-outlined"
-  styleClass="w-30rem"
-/>
-
-<p-dialog
-  [(visible)]="exportVisible"
-  [dismissableMask]="true"
-  [draggable]="false"
-  [modal]="true"
-  [resizable]="false"
-  contentStyleClass="w-30rem"
->
-  <ng-template pTemplate="header">
-    <h2>
-      <i class="pi pi-file-export"></i>
-      Export collection(s)
-    </h2>
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    {{ exportMessage }}
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button
-      [outlined]="true"
-      (onClick)="exportItems(ExportType.CSV)"
-      badge="{,}"
-      label="CSV"
-      severity="secondary"
-    />
-    <p-button
-      (onClick)="exportItems(ExportType.JSON)"
-      badge="{;}"
-      label="JSON"
-      severity="primary"
-    />
-  </ng-template>
-</p-dialog>
-
 <p-dialog
   [closable]="false"
   [draggable]="false"
@@ -54,22 +8,25 @@
   contentStyleClass="w-30rem"
 >
   <ng-template pTemplate="header">
-    <h2>
-      <i class="pi pi-spin pi-spinner"></i>
-      Loading...
-    </h2>
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.HOURGLASS"
+      label="Loading collections..."
+    />
   </ng-template>
 
   <ng-template pTemplate="content">
-    <i class="pi pi-database"></i>
-    Database: {{ server() }}
+    <div class="container flex-column align-items-center">
+      <p-progressSpinner />
+      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
+    </div>
   </ng-template>
 
   <ng-template pTemplate="footer">
     <p-button
       [disabled]="!lastRefresh"
+      [icon]="PrimeIcons.TIMES"
       (onClick)="cancelRefresh()"
-      icon="pi pi-times"
       label="Cancel"
       severity="danger"
     />
@@ -84,43 +41,137 @@
   contentStyleClass="w-30rem"
 >
   <ng-template pTemplate="header">
-    <h2>
-      <i class="pi pi-exclamation-circle"></i>
-      Error
-    </h2>
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.EXCLAMATION_TRIANGLE"
+      label="An error occurred"
+    />
   </ng-template>
 
   <ng-template pTemplate="content">
-    <i class="pi pi-database"></i>
-    Database: {{ server() }}
-    <p-divider />
-    <p-panel [toggleable]="true" [collapsed]="true">
-      <ng-template pTemplate="header">
-        <div class="flex gap-2 text-red-500">
-          <i class="pi pi-times-circle"></i>
-          {{ lastError.name }}
-        </div>
-      </ng-template>
-      <p>{{ lastError.message }}</p>
-    </p-panel>
+    <div class="container flex-column">
+      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
+      <div></div>
+      <p-panel [collapsed]="true" [toggleable]="true" header="Error details">
+        <ng-template pTemplate="content">
+          <app-icon-label
+            class="text-danger"
+            [label]="lastError.name"
+            [icon]="PrimeIcons.TIMES_CIRCLE"
+          />
+          <div class="pl-4">
+            {{ lastError.message }}
+          </div>
+        </ng-template>
+      </p-panel>
+    </div>
   </ng-template>
 
   <ng-template pTemplate="footer">
     <p-button
       [outlined]="true"
-      [routerLink]="['..']"
-      icon="pi pi-arrow-left"
+      [icon]="PrimeIcons.ARROW_LEFT"
+      routerLink="../"
       label="Back"
       severity="secondary"
     />
-    <p-button (onClick)="refreshItems()" icon="pi pi-refresh" label="Refresh" severity="primary" />
+    <p-button
+      [icon]="PrimeIcons.REFRESH"
+      (onClick)="refreshItems()"
+      label="Refresh"
+      severity="primary"
+    />
   </ng-template>
 </p-dialog>
 
+<p-dialog
+  [(visible)]="chooseExportVisible"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [modal]="true"
+  [resizable]="false"
+  styleClass="w-6"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.FILE_EXPORT"
+      label="Choose collections export format"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <p-chips
+      class="w-full"
+      [(ngModel)]="exportItems"
+      [autofocus]="true"
+      [disabled]="exportItems.length === 1"
+      (onFocus)="removeChipsInput($event)"
+      styleClass="w-full"
+    >
+      <ng-template let-item pTemplate="item">
+        <app-icon-label [label]="item.name" [icon]="PrimeIcons.TABLE" />
+      </ng-template>
+    </p-chips>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      (onClick)="chosenExportItems(ExportType.JSON)"
+      badge="{;}"
+      label="JSON"
+      severity="primary"
+    />
+    <p-button
+      [outlined]="true"
+      (onClick)="chosenExportItems(ExportType.CSV)"
+      badge="{,}"
+      label="CSV"
+      severity="secondary"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog
+  [dismissableMask]="true"
+  [icon]="PrimeIcons.TRASH"
+  acceptButtonStyleClass="p-button-danger"
+  acceptLabel="Delete"
+  rejectButtonStyleClass="p-button-outlined"
+  rejectLabel="Cancel"
+  styleClass="w-6"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.MINUS_CIRCLE"
+      label="Confirm collections delete"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="message">
+    <p-chips
+      class="px-4 w-full"
+      [(ngModel)]="deleteItems"
+      [autofocus]="true"
+      [disabled]="deleteItems.length === 1"
+      (onFocus)="removeChipsInput($event)"
+      styleClass="w-full"
+    >
+      <ng-template let-item pTemplate="item">
+        <app-icon-label [label]="item.name" [icon]="PrimeIcons.TABLE" />
+      </ng-template>
+    </p-chips>
+  </ng-template>
+</p-confirmDialog>
+
+<p-contextMenu #context [model]="contextMenu" />
+
 <p-table
-  [(contextMenuSelection)]="selectedItem"
+  [(contextMenuSelection)]="contextItem"
   [(selection)]="selectedItems"
   [contextMenu]="context"
+  [loading]="state === State.Loading"
   [scrollable]="true"
   [sortOrder]="1"
   [value]="items"
@@ -130,13 +181,13 @@
   styleClass="p-datatable-gridlines p-datatable-striped"
 >
   <ng-template pTemplate="caption">
-    <p-toolbar styleClass="py-0 border-noround-bottom">
+    <p-toolbar styleClass="border-noround-bottom">
       <ng-template pTemplate="start">
-        <div class="flex gap-2">
+        <div class="container">
           <p-fileUpload
             [auto]="true"
             [customUpload]="true"
-            (uploadHandler)="importItems($event)"
+            (uploadHandler)="handleImportItems($event)"
             accept=".csv,.json"
             chooseIcon="pi pi-download"
             chooseLabel="Import"
@@ -154,14 +205,14 @@
       </ng-template>
 
       <ng-template pTemplate="center">
-        <h1>
+        <h1 class="my-0">
           <i class="pi pi-database text-2xl"></i>
           Database: {{ server() }}
         </h1>
       </ng-template>
 
       <ng-template pTemplate="end">
-        <div class="flex gap-2">
+        <div class="container">
           <p-button [disabled]="true" icon="pi pi-plus" label="Add" severity="success" />
           <p-splitButton
             [buttonDisabled]="!selectedItems.length"
@@ -179,10 +230,10 @@
 
     <p-toolbar styleClass="border-noround-top">
       <ng-template pTemplate="left">
-        <div class="flex gap-2">
+        <div class="container">
           <p-button
             [outlined]="true"
-            [routerLink]="['..']"
+            routerLink="../"
             icon="pi pi-arrow-left"
             label="Back"
             severity="secondary"
@@ -190,8 +241,8 @@
           <div
             class="select-none"
             [badgeDisabled]="!lastRefresh"
-            [value]="(lastRefresh | date:'shortTime')!"
             [severity]="getRefreshSeverity()"
+            [value]="(lastRefresh | date:'shortTime')!"
             pBadge
           >
             <p-button
@@ -205,10 +256,10 @@
       </ng-template>
 
       <ng-template pTemplate="right">
-        <div class="flex gap-2">
+        <div class="container">
           <p-inputGroup>
             <p-inputGroupAddon>
-              <i class="pi pi-search"></i>
+              <app-icon-label icon="pi pi-search" />
             </p-inputGroupAddon>
             <input
               #search
@@ -220,12 +271,11 @@
             <button
               [disabled]="!search.value"
               (click)="clearSearch()"
+              icon="pi pi-times"
               pButton
               severity="danger"
               type="button"
-            >
-              <i class="pi pi-times"></i>
-            </button>
+            ></button>
           </p-inputGroup>
           <p-button
             [outlined]="true"
@@ -244,7 +294,7 @@
         <p-tableHeaderCheckbox />
       </th>
       <th pFrozenColumn pSortableColumn="name">
-        <i class="pi pi-list"></i> Collection
+        <i class="pi pi-table"></i> Collection
         <p-sortIcon field="name" />
       </th>
       <th pSortableColumn="length">
@@ -265,8 +315,8 @@
       </td>
       <td pFrozenColumn>
         <p-button
-          [link]="true"
           [label]="item.name"
+          [link]="true"
           [routerLink]="item.name"
           styleClass="py-0"
         ></p-button>

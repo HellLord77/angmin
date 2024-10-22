@@ -1,0 +1,9 @@
+<div class="flex align-items-center gap-2" [class]="styleClass()">
+  @if (iconLeft()) {
+    <i [class]="iconLeft()"></i>
+  }
+  {{ label() }}
+  @if (iconRight()) {
+    <i [class]="iconRight()"></i>
+  }
+</div>

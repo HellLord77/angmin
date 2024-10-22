@@ -1,46 +1,5 @@
 <p-toast />
 
-<p-contextMenu #context [model]="contextMenu" />
-
-<p-confirmDialog
-  [dismissableMask]="true"
-  header="Delete document(s)"
-  icon="pi pi-trash"
-  rejectButtonStyleClass="p-button-outlined"
-  styleClass="w-30rem"
-/>
-
-<p-dialog
-  [(visible)]="exportVisible"
-  [dismissableMask]="true"
-  [draggable]="false"
-  [modal]="true"
-  [resizable]="false"
-  contentStyleClass="w-30rem"
->
-  <ng-template pTemplate="header">
-    <h2>
-      <i class="pi pi-file-export"></i>
-      Export document(s)
-    </h2>
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    {{ exportMessage }}
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button (onClick)="exportData(ExportType.JSON)" badge="{;}" label="JSON" severity="primary" />
-    <p-button
-      [outlined]="true"
-      (onClick)="exportData(ExportType.CSV)"
-      badge="{,}"
-      label="CSV"
-      severity="secondary"
-    />
-  </ng-template>
-</p-dialog>
-
 <p-dialog
   [closable]="false"
   [draggable]="false"
@@ -49,22 +8,26 @@
   contentStyleClass="w-30rem"
 >
   <ng-template pTemplate="header">
-    <h2>
-      <i class="pi pi-spin pi-spinner"></i>
-      Loading...
-    </h2>
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.HOURGLASS"
+      label="Loading documents..."
+    />
   </ng-template>
 
   <ng-template pTemplate="content">
-    <i class="pi pi-table"></i>
-    Collection: {{ item() }}
+    <div class="container flex-column align-items-center">
+      <p-progressSpinner />
+      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
+      <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
+    </div>
   </ng-template>
 
   <ng-template pTemplate="footer">
     <p-button
       [disabled]="!lastRefresh"
+      [icon]="PrimeIcons.TIMES"
       (onClick)="cancelRefresh()"
-      icon="pi pi-times"
       label="Cancel"
       severity="danger"
     />
@@ -79,50 +42,153 @@
   contentStyleClass="w-30rem"
 >
   <ng-template pTemplate="header">
-    <h2>
-      <i class="pi pi-exclamation-circle"></i>
-      Error
-    </h2>
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.EXCLAMATION_TRIANGLE"
+      label="An error occurred"
+    />
   </ng-template>
 
   <ng-template pTemplate="content">
-    <i class="pi pi-table"></i>
-    Collection: {{ item() }}
-    <p-divider />
-    <p-panel [collapsed]="true" [toggleable]="true">
-      <ng-template pTemplate="header">
-        <div class="flex gap-2 text-red-500">
-          <i class="pi pi-times-circle"></i>
-          {{ lastError.name }}
-        </div>
-      </ng-template>
-      <p>{{ lastError.message }}</p>
-    </p-panel>
+    <div class="container flex-column">
+      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
+      <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
+      <div></div>
+      <p-panel [collapsed]="true" [toggleable]="true" header="Error details">
+        <ng-template pTemplate="content">
+          <app-icon-label
+            class="text-danger"
+            [label]="lastError.name"
+            [icon]="PrimeIcons.TIMES_CIRCLE"
+          />
+          <div class="pl-4">
+            {{ lastError.message }}
+          </div>
+        </ng-template>
+      </p-panel>
+    </div>
   </ng-template>
 
   <ng-template pTemplate="footer">
     <p-button
       [outlined]="true"
-      [routerLink]="['..']"
-      icon="pi pi-arrow-left"
+      [icon]="PrimeIcons.ARROW_LEFT"
+      routerLink="../"
       label="Back"
       severity="secondary"
     />
-    <p-button (onClick)="refreshData()" icon="pi pi-refresh" label="Refresh" severity="primary" />
+    <p-button
+      [icon]="PrimeIcons.REFRESH"
+      (onClick)="refreshData()"
+      label="Refresh"
+      severity="primary"
+    />
   </ng-template>
 </p-dialog>
 
+<p-dialog
+  [(visible)]="chooseExportVisible"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [modal]="true"
+  [resizable]="false"
+  styleClass="w-6"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.FILE_EXPORT"
+      label="Choose documents export format"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <div class="container">
+      <p-chips
+        class="w-full"
+        [(ngModel)]="exportData"
+        [autofocus]="true"
+        [disabled]="exportData.length === 1"
+        (onFocus)="removeChipsInput($event)"
+        styleClass="w-full"
+      >
+        <ng-template let-item pTemplate="item">
+          <app-icon-label [label]="item.id" [icon]="PrimeIcons.FILE" />
+        </ng-template>
+      </p-chips>
+      <!-- TODO: empty exportData -->
+      <!-- embed? -->
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      (onClick)="chosenExportData(ExportType.JSON)"
+      badge="{;}"
+      label="JSON"
+      severity="primary"
+    />
+    <p-button
+      [outlined]="true"
+      (onClick)="chosenExportData(ExportType.CSV)"
+      badge="{,}"
+      label="CSV"
+      severity="secondary"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog
+  [dismissableMask]="true"
+  [icon]="PrimeIcons.TRASH"
+  acceptButtonStyleClass="p-button-danger"
+  acceptLabel="Delete"
+  rejectButtonStyleClass="p-button-outlined"
+  rejectLabel="Cancel"
+  styleClass="w-6"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      class="p-dialog-title"
+      [icon]="PrimeIcons.MINUS_CIRCLE"
+      label="Confirm documents delete"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="message">
+    <div class="container w-full">
+      <p-chips
+        class="px-4 w-full"
+        [(ngModel)]="deleteData"
+        [autofocus]="true"
+        [disabled]="deleteData.length === 1"
+        (onFocus)="removeChipsInput($event)"
+        styleClass="w-full"
+      >
+        <ng-template let-item pTemplate="item">
+          <app-icon-label [label]="item.id" [icon]="PrimeIcons.FILE" />
+        </ng-template>
+      </p-chips>
+      <!-- TODO: empty deleteData -->
+      <!-- dependent? -->
+    </div>
+  </ng-template>
+</p-confirmDialog>
+
+<p-contextMenu #context [model]="contextMenu" />
+
 <p-table
-  [(contextMenuSelection)]="selectedDatum"
+  [(contextMenuSelection)]="contextDatum"
   [(selection)]="selectedData"
-  [columns]="selectedColumns?.length ? selectedColumns : columns"
+  [columns]="selectedColumns.length ? selectedColumns : columns"
   [contextMenu]="context"
   [lazy]="true"
+  [loading]="state === State.Loading"
   [paginator]="true"
   [rowsPerPageOptions]="[10, 25, 50]"
   [rows]="10"
   [scrollable]="true"
-  [showCurrentPageReport]="true"
+  [showJumpToPageDropdown]="true"
   [totalRecords]="paginatedData.items"
   [value]="paginatedData.data"
   (onLazyLoad)="refreshData()"
@@ -133,13 +199,13 @@
   styleClass="p-datatable-gridlines p-datatable-striped"
 >
   <ng-template pTemplate="caption">
-    <p-toolbar styleClass="py-0 border-noround-bottom">
+    <p-toolbar styleClass="border-noround-bottom">
       <ng-template pTemplate="start">
-        <div class="flex gap-2">
+        <div class="container">
           <p-fileUpload
             [auto]="true"
             [customUpload]="true"
-            (uploadHandler)="importData($event)"
+            (uploadHandler)="handleImportData($event)"
             accept=".csv,.json"
             chooseIcon="pi pi-download"
             chooseLabel="Import"
@@ -157,14 +223,14 @@
       </ng-template>
 
       <ng-template pTemplate="center">
-        <h1>
+        <h1 class="my-0">
           <i class="pi pi-table text-2xl"></i>
           Collection: {{ item() }}
         </h1>
       </ng-template>
 
       <ng-template pTemplate="end">
-        <div class="flex gap-2">
+        <div class="container">
           <p-button [disabled]="true" icon="pi pi-plus" label="Add" severity="success" />
           <p-splitButton
             [buttonDisabled]="!selectedData.length"
@@ -182,11 +248,11 @@
 
     <p-toolbar styleClass="border-noround-top">
       <ng-template pTemplate="left">
-        <div class="flex gap-2">
+        <div class="container">
           <p-button
             [outlined]="true"
-            [routerLink]="['..']"
-            icon="pi pi-arrow-left"
+            [icon]="PrimeIcons.ARROW_LEFT"
+            routerLink="../"
             label="Back"
             severity="secondary"
           />
@@ -208,14 +274,14 @@
       </ng-template>
 
       <ng-template pTemplate="right">
-        <div class="flex gap-2">
+        <div class="container">
           <p-multiSelect
             [(ngModel)]="selectedColumns"
             [loading]="state === State.Loading"
             [options]="columns"
             [showClear]="true"
             display="chip"
-            placeholder="Choose fields"
+            placeholder="Select fields..."
           />
           <p-button
             [outlined]="true"
@@ -234,16 +300,17 @@
         <p-tableHeaderCheckbox />
       </th>
       <th pFrozenColumn pSortableColumn="id">
-        <i class="pi pi-list"></i> id
+        <i class="pi pi-file"></i> id
         <p-sortIcon field="id" />
       </th>
       @for (column of columns; track column) {
         <th [pSortableColumn]="column">
-          <i class="pi pi-list"></i> {{ column }}
+          <i class="pi" [class]="foreignColumns.has(column) ? 'pi-key' : 'pi-list'"></i>
+          {{ column }}
           <p-sortIcon [field]="column" />
         </th>
       }
-      <th class="w-1rem" alignFrozen="right" pFrozenColumn></th>
+      <th class="w-9rem" alignFrozen="right" pFrozenColumn><i class="pi pi-file-edit"></i> Edit</th>
     </tr>
   </ng-template>
 
@@ -270,12 +337,22 @@
               />
             </ng-template>
 
-            <ng-template pTemplate="output"> {{ datum[column] }}</ng-template>
+            <ng-template pTemplate="output">
+              @if (foreignColumns.has(column)) {
+                <p-button
+                  [label]="datum[column]"
+                  [link]="true"
+                  [routerLink]="['../', foreignColumns.get(column), datum[column]]"
+                />
+              } @else {
+                {{ datum[column] }}
+              }
+            </ng-template>
           </p-cellEditor>
         </td>
       }
       <td alignFrozen="right" pFrozenColumn>
-        <div class="flex justify-content-center gap-2 w-8rem">
+        <div class="flex justify-content-center gap-2">
           @if (editing) {
             <p-button
               (onClick)="saveEditData(datum)"

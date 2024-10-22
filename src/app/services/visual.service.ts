@@ -9,7 +9,6 @@ import {StorageService} from './storage.service';
 export class VisualService {
   storageService = inject(StorageService);
 
-  #htmlElement = document.documentElement;
   #linkElement = document.getElementById('app-theme') as HTMLLinkElement;
 
   constructor() {
@@ -18,7 +17,7 @@ export class VisualService {
   }
 
   setScale(scale: number) {
-    this.#htmlElement.style.fontSize = `${16 + 2 * scale}px`;
+    document.documentElement.style.fontSize = `${16 + 2 * scale}px`;
   }
 
   setTheme(theme: Theme) {
