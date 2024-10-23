@@ -1,0 +1,49 @@
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [modal]="true"
+  [visible]="visible()"
+  styleClass="w-30rem"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      [icon]="PrimeIcons.SPINNER_DOTTED"
+      [label]="headerLabel()"
+      iconStyleClass="pi-spin p-dialog-title"
+      styleClass="p-dialog-title"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <div class="flex-column align-items-center container">
+      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
+      @if (item()) {
+        <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
+      }
+      @if (datum()) {
+        <app-icon-label [icon]="PrimeIcons.FILE" label="Document: {{ datum() }}" />
+      }
+    </div>
+    <p-divider class="flex flex-column align-items-center" styleClass="w-9" />
+    @if (progressMax()) {
+      <p-progressBar [value]="getProgressValue()" />
+      <app-icon-label
+        class="flex flex-column align-items-center"
+        [icon]="progressIcon()!"
+        label="{{ progress() | number }}/{{ progressMax() | number }}"
+      />
+    } @else {
+      <p-progressBar mode="indeterminate" />
+    }
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      [disabled]="cancelDisabled()"
+      [icon]="PrimeIcons.TIMES"
+      (onClick)="onCancel.emit()"
+      label="Cancel"
+      severity="danger"
+    />
+  </ng-template>
+</p-dialog>

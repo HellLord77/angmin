@@ -16,9 +16,9 @@ export class NetworkService {
     if (server.path !== undefined) {
       paths.unshift(server.path);
     }
-    for (const path of paths) {
+    paths.forEach((path) => {
       pathname += `/${path}`;
-    }
+    });
 
     let credentials = '';
     if (server.username !== undefined || server.password !== undefined) {
@@ -34,11 +34,7 @@ export class NetworkService {
     return this.httpClient.get(this.#getUrl(server), {responseType: 'text'});
   }
 
-  getData$(server: Server, name: string) {
-    return this.httpClient.get<Datum[]>(this.#getUrl(server, [name]));
-  }
-
-  getDataPaginated$(server: Server, name: string, page: number, per_page: number, sort: string) {
+  getItemsPaginated$(server: Server, name: string, page: number, per_page: number, sort: string) {
     const params = new HttpParams()
       .set('_page', page.toString())
       .set('_per_page', per_page.toString())
@@ -46,11 +42,19 @@ export class NetworkService {
     return this.httpClient.get<PaginatedData>(this.#getUrl(server, [name]), {params});
   }
 
-  getDatum$(server: Server, name: string, id: string) {
+  getValue$(server: Server, name: string, id: string) {
     return this.httpClient.get<Datum>(this.#getUrl(server, [name, id]));
   }
 
-  deleteDatum(server: Server, name: string, id: string) {
+  postValue$(server: Server, name: string, datum: Partial<Datum>) {
+    return this.httpClient.post<Datum>(this.#getUrl(server, [name]), datum);
+  }
+
+  patchValue$(server: Server, name: string, id: string, value: Partial<Datum>) {
+    return this.httpClient.patch<Datum>(this.#getUrl(server, [name, id]), value);
+  }
+
+  deleteValue$(server: Server, name: string, id: string) {
     return this.httpClient.delete<Datum>(this.#getUrl(server, [name, id]));
   }
 }

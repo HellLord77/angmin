@@ -33,11 +33,11 @@ export class StorageService {
     this.#theme = theme;
   }
 
-  getServer(alias: string): Server | undefined {
+  getServer(alias: string) {
     return this.#servers.get(alias);
   }
 
-  getServers(): Server[] {
+  getServers() {
     return [...this.#servers.values()];
   }
 }

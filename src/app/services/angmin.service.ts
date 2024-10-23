@@ -1,12 +1,13 @@
 import {inject, Injectable} from '@angular/core';
-import {forEach} from 'lodash-es';
 import {SortMeta} from 'primeng/api';
-import {catchError, EMPTY, expand, map, mergeMap, throwError} from 'rxjs';
+import {catchError, concatMap, from, map, throwError} from 'rxjs';
 
 import {UndefinedAlias} from '../errors/undefined-alias.error';
 import {UnparsableHtml} from '../errors/unparsable-html.error';
 import {UnreachableServer} from '../errors/unreachable-server.error';
+import {Datum} from '../models/datum.model';
 import {Item} from '../models/item.model';
+import {DatumMapper} from '../types/datum-mapper';
 import {NetworkService} from './network.service';
 import {StorageService} from './storage.service';
 
@@ -21,26 +22,6 @@ export class AngminService {
     return this.storageService.getServers();
   }
 
-  getItems$(alias: string) {
-    const server = this.storageService.getServer(alias);
-    if (server === undefined) {
-      return throwError(() => new UndefinedAlias(alias));
-    }
-
-    return this.networkService.getServer$(server).pipe(
-      catchError(() => {
-        throw new UnreachableServer(server);
-      }),
-      map((html: string) => {
-        try {
-          return this.#getItems(html);
-        } catch {
-          throw new UnparsableHtml(html);
-        }
-      }),
-    );
-  }
-
   #getItems(html: string): Item[] {
     const items: Item[] = [];
 
@@ -48,7 +29,7 @@ export class AngminService {
     const document = parser.parseFromString(html, 'text/html');
     const liElements = document.getElementsByTagName('li');
 
-    forEach(liElements, (liElement) => {
+    Array.from(liElements).forEach((liElement) => {
       const aElement = liElement.getElementsByTagName('a');
       if (aElement.length !== 1) {
         return;
@@ -84,7 +65,27 @@ export class AngminService {
     return items;
   }
 
-  getData$(alias: string, name: string, page: number, per_page: number, sortMetas: SortMeta[]) {
+  readItems$(alias: string) {
+    const server = this.storageService.getServer(alias);
+    if (server === undefined) {
+      return throwError(() => new UndefinedAlias(alias));
+    }
+
+    return this.networkService.getServer$(server).pipe(
+      catchError(() => {
+        throw new UnreachableServer(server);
+      }),
+      map((html: string) => {
+        try {
+          return this.#getItems(html);
+        } catch {
+          throw new UnparsableHtml(html);
+        }
+      }),
+    );
+  }
+
+  readData$(alias: string, name: string, page: number, per_page: number, sortMetas: SortMeta[]) {
     const server = this.storageService.getServer(alias);
     if (server === undefined) {
       return throwError(() => new UndefinedAlias(alias));
@@ -94,34 +95,30 @@ export class AngminService {
       .map((sortMeta) => `${sortMeta.order === 1 ? '' : '-'}${sortMeta.field}`)
       .toString();
 
-    return this.networkService.getDataPaginated$(server, name, page, per_page, sort);
+    return this.networkService.getItemsPaginated$(server, name, page, per_page, sort);
   }
 
-  iterData$(alias: string, name: string) {
-    const server = this.storageService.getServer(alias);
-    if (server === undefined) {
-      return throwError(() => new UndefinedAlias(alias));
-    }
-
-    return this.networkService.getDataPaginated$(server, name, 1, 100, '').pipe(
-      expand((paginatedData) =>
-        paginatedData.next
-          ? this.networkService.getDataPaginated$(server, name, paginatedData.next, 100, '')
-          : EMPTY,
-      ),
-      mergeMap((paginatedData) => paginatedData.data),
-    );
-  }
-
-  getValue$(alias: string, name: string, id: string) {
+  readValue$(alias: string, name: string, id: string) {
     const server = this.storageService.getServer(alias);
     if (server === undefined) {
       return throwError(() => new UndefinedAlias(alias));
     }
 
     return this.networkService
-      .getDatum$(server, name, id)
+      .getValue$(server, name, id)
       .pipe(map((datum) => JSON.stringify(datum)));
+  }
+
+  updateValue$(alias: string, name: string, datum: Datum) {
+    const server = this.storageService.getServer(alias);
+    if (server === undefined) {
+      return throwError(() => new UndefinedAlias(alias));
+    }
+
+    const partialDatum: Partial<Datum> = {...datum};
+    delete partialDatum.id;
+
+    return this.networkService.patchValue$(server, name, datum.id, partialDatum);
   }
 
   deleteValue$(alias: string, name: string, id: string) {
@@ -130,6 +127,71 @@ export class AngminService {
       return throwError(() => new UndefinedAlias(alias));
     }
 
-    return this.networkService.deleteDatum(server, name, id);
+    return this.networkService.deleteValue$(server, name, id);
+  }
+
+  mapData$(alias: string, name: string, ids: string[], datumMapper: DatumMapper) {
+    return from(ids).pipe(concatMap((id) => datumMapper(alias, name, id)));
+  }
+
+  mapPageData$(
+    alias: string,
+    name: string,
+    page: number,
+    per_page: number,
+    datumMapper: DatumMapper,
+  ) {
+    return this.readData$(alias, name, page, per_page, []).pipe(
+      concatMap((paginatedData) =>
+        this.mapData$(
+          alias,
+          name,
+          paginatedData.data.map((datum) => datum.id),
+          datumMapper,
+        ),
+      ),
+    );
+  }
+
+  mapPagesData$(
+    alias: string,
+    name: string,
+    pages: number[],
+    per_page: number,
+    datumMapper: DatumMapper,
+  ) {
+    return from(pages).pipe(
+      concatMap((page) => this.mapPageData$(alias, name, page, per_page, datumMapper)),
+    );
+  }
+
+  mapItemData$(alias: string, name: string, datumMapper: DatumMapper) {
+    return this.readData$(alias, name, 1, 100, []).pipe(
+      concatMap((paginatedData) =>
+        this.mapPagesData$(
+          alias,
+          name,
+          Array.from({length: paginatedData.pages}, (_, index) => index + 1),
+          100,
+          datumMapper,
+        ),
+      ),
+    );
+  }
+
+  mapItemsData$(alias: string, names: string[], datumMapper: DatumMapper) {
+    return from(names).pipe(concatMap((name) => this.mapItemData$(alias, name, datumMapper)));
+  }
+
+  mapServerData$(alias: string, datumMapper: DatumMapper) {
+    return this.readItems$(alias).pipe(
+      concatMap((items) =>
+        this.mapItemsData$(
+          alias,
+          items.map((item) => item.name),
+          datumMapper,
+        ),
+      ),
+    );
   }
 }

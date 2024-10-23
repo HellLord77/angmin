@@ -21,7 +21,7 @@ export class DatumComponent implements OnInit {
   ngOnInit() {
     console.log(`Datum: ${this.server()}, ${this.item()}, ${this.datum()}`);
 
-    this.angminService.getValue$(this.server(), this.item(), this.datum()).subscribe((value) => {
+    this.angminService.readValue$(this.server(), this.item(), this.datum()).subscribe((value) => {
       this.value = value;
     });
   }

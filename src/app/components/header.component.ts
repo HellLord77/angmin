@@ -1,7 +1,6 @@
 import {Component, inject, input, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {NavigationEnd, Router} from '@angular/router';
-import {filter} from 'lodash-es';
 import {MenuItem, PrimeIcons} from 'primeng/api';
 import {BreadcrumbModule} from 'primeng/breadcrumb';
 import {Button, ButtonDirective} from 'primeng/button';
@@ -56,7 +55,7 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
-        const paths = filter(event.url.split('/'));
+        const paths = event.url.split('/').filter(Boolean);
         if (paths.length) {
           const server = paths[0];
           this.navigationMenu = [{label: server, icon: PrimeIcons.DATABASE, routerLink: [server]}];

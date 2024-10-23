@@ -4,40 +4,7 @@
   [closable]="false"
   [draggable]="false"
   [modal]="true"
-  [visible]="state === State.Loading"
-  contentStyleClass="w-30rem"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.HOURGLASS"
-      label="Loading collections..."
-      styleClass="p-dialog-title"
-    />
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    <div class="flex-column align-items-center container">
-      <p-progressSpinner />
-      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
-    </div>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button
-      [disabled]="!lastRefresh"
-      [icon]="PrimeIcons.TIMES"
-      (onClick)="cancelRefresh()"
-      label="Cancel"
-      severity="danger"
-    />
-  </ng-template>
-</p-dialog>
-
-<p-dialog
-  [closable]="false"
-  [draggable]="false"
-  [modal]="true"
-  [visible]="state === State.Errored"
+  [visible]="lastError !== undefined"
   contentStyleClass="w-30rem"
 >
   <ng-template pTemplate="header">
@@ -61,10 +28,10 @@
           <app-icon-label
             class="text-danger"
             [icon]="PrimeIcons.TIMES_CIRCLE"
-            [label]="lastError.name"
+            [label]="lastError!.name"
           />
           <div class="pl-4">
-            {{ lastError.message }}
+            {{ lastError!.message }}
           </div>
         </ng-template>
       </p-panel>
@@ -138,14 +105,31 @@
 
 <app-confirm-dialog
   [(items)]="taskItems"
-  [icon]="PrimeIcons.TRASH"
   [headerIcon]="PrimeIcons.MINUS_CIRCLE"
-  [itemIcon]="PrimeIcons.FILE"
-  acceptButtonStyleClass="p-button-danger"
-  acceptLabel="Delete"
-  rejectLabel="Cancel"
-  headerLabel="Confirm documents delete"
-  itemField="id"
+  [itemIcon]="PrimeIcons.TABLE"
+  key="delete"
+  headerLabel="Confirm collections delete"
+  itemField="name"
+/>
+
+<app-progress-dialog
+  [cancelDisabled]="!lastRefresh"
+  [server]="server()"
+  [visible]="!task.closed && taskType === TaskType.Read"
+  (onCancel)="cancelRefreshItems()"
+  headerLabel="Loading collections..."
+/>
+
+<app-progress-dialog
+  [datum]="taskDatum"
+  [item]="taskItem"
+  [progress]="taskCurrent"
+  [progressIcon]="PrimeIcons.TRASH"
+  [progressMax]="taskMax"
+  [server]="server()"
+  [visible]="!task.closed && taskType === TaskType.Delete"
+  (onCancel)="cancelDeleteItems()"
+  headerLabel="Deleting documents..."
 />
 
 <p-contextMenu #context [model]="contextMenu" />
@@ -154,7 +138,6 @@
   [(contextMenuSelection)]="contextItem"
   [(selection)]="selectedItems"
   [contextMenu]="context"
-  [loading]="state === State.Loading"
   [scrollable]="true"
   [sortOrder]="1"
   [value]="items"
@@ -253,7 +236,7 @@
               #search
               (input)="filterTable(search.value)"
               pInputText
-              placeholder="Search..."
+              placeholder="Search collections..."
               type="text"
             />
             <button

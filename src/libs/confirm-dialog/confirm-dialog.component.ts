@@ -1,4 +1,4 @@
-import {Component, Input, input, output} from '@angular/core';
+import {Component, input, output} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {PrimeTemplate} from 'primeng/api';
 import {ChipsModule} from 'primeng/chips';
@@ -14,13 +14,10 @@ import {IconLabelComponent} from '../icon-label/icon-label.component';
   styleUrl: './confirm-dialog.component.css',
 })
 export class ConfirmDialogComponent {
-  icon = input.required<string>();
-  acceptButtonStyleClass = input<string | undefined>(undefined);
-  acceptLabel = input<string | undefined>(undefined);
-  rejectLabel = input<string | undefined>(undefined);
+  key = input.required<string>();
   headerIcon = input.required<string>();
   headerLabel = input.required<string>();
-  @Input({required: true}) items!: unknown[];
+  items = input.required<unknown[]>();
   itemsChange = output<unknown[]>();
   itemIcon = input.required<string>();
   itemField = input.required<string>();

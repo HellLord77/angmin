@@ -2,7 +2,6 @@ import {DatePipe, DecimalPipe, PercentPipe} from '@angular/common';
 import {Component, ElementRef, inject, input, OnDestroy, OnInit, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {map, sum} from 'lodash-es';
 import {ConfirmationService, MenuItem, MessageService, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
@@ -20,16 +19,18 @@ import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
 import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
-import {Subscription} from 'rxjs';
+import {NEVER} from 'rxjs';
 
 import {ConfirmDialogComponent} from '../../libs/confirm-dialog/confirm-dialog.component';
 import {IconLabelComponent} from '../../libs/icon-label/icon-label.component';
 import {IconTableHeaderComponent} from '../../libs/icon-table-header/icon-table-header.component';
+import {ProgressDialogComponent} from '../../libs/progress-dialog/progress-dialog.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
-import {State} from '../enums/state';
+import {TaskType} from '../enums/task-type';
 import {Item} from '../models/item.model';
 import {AngminService} from '../services/angmin.service';
+import {DatumMapper} from '../types/datum-mapper';
 
 @Component({
   selector: 'app-server',
@@ -59,6 +60,7 @@ import {AngminService} from '../services/angmin.service';
     IconLabelComponent,
     IconTableHeaderComponent,
     ConfirmDialogComponent,
+    ProgressDialogComponent,
   ],
   templateUrl: './server.component.html',
   styleUrl: './server.component.css',
@@ -110,11 +112,16 @@ export class ServerComponent implements OnInit, OnDestroy {
     },
   ];
 
-  state = State.Loading;
   chooseExportVisible = false;
-  lastError!: Error;
-  refreshTask!: Subscription;
+  lastError?: Error;
   lastRefresh?: Date;
+
+  taskType = TaskType.Read;
+  task = NEVER.subscribe();
+  taskMax = 0;
+  taskCurrent = 0;
+  taskItem = '...';
+  taskDatum = '...';
 
   items: Item[] = [];
   selectedItems: Item[] = [];
@@ -124,8 +131,8 @@ export class ServerComponent implements OnInit, OnDestroy {
   itemsTotalLength!: number;
 
   protected readonly PrimeIcons = PrimeIcons;
-  protected readonly State = State;
   protected readonly ActionType = ActionType;
+  protected readonly TaskType = TaskType;
   protected readonly ExportType = ExportType;
 
   ngOnInit() {
@@ -133,54 +140,42 @@ export class ServerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.refreshTask?.unsubscribe();
+    this.task.unsubscribe();
   }
 
   refreshItems() {
-    this.state = State.Loading;
+    this.lastError = undefined;
 
-    this.refreshTask = this.angminService.getItems$(this.server()).subscribe({
+    this.taskType = TaskType.Read;
+    this.task = this.angminService.readItems$(this.server()).subscribe({
       next: (items) => {
         this.items = items;
-        const itemNames = new Set(map(items, 'name'));
+        this.itemsTotalLength = items.reduce((total, item) => total + item.length, 0);
+        const itemNames = new Set(items.map((item) => item.name));
         this.selectedItems = this.selectedItems.filter((item) => itemNames.has(item.name));
-        this.itemsTotalLength = sum(map(items, 'length'));
-        this.lastRefresh = new Date();
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Database loaded',
-          detail: `Collections #: ${items.length}`,
-        });
-        this.state = State.Loaded;
       },
       error: (error) => {
         this.lastError = error;
-        this.state = State.Errored;
       },
+      complete: () => this.completeRefreshItems(),
     });
   }
 
-  cancelRefresh() {
-    this.refreshTask?.unsubscribe();
-    this.state = State.Cancelled;
+  cancelRefreshItems() {
+    this.task.unsubscribe();
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Refresh cancelled',
+    });
   }
 
-  clearSearch() {
-    this.searchElementRef().nativeElement.value = '';
-    this.filterTable('');
-  }
-
-  filterTable(value: string) {
-    this.table().filter(value, 'name', 'contains');
-  }
-
-  resetTable() {
-    this.clearSearch();
-
-    const table = this.table();
-    table.sortField = 'name';
-    table.sortOrder = 1;
-    table.sortSingle();
+  completeRefreshItems() {
+    this.lastRefresh = new Date();
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Database loaded',
+      detail: `Collections #: ${this.items.length}`,
+    });
   }
 
   handleImportItems(fileUploadHandlerEvent: FileUploadHandlerEvent) {
@@ -214,18 +209,62 @@ export class ServerComponent implements OnInit, OnDestroy {
     }
 
     this.confirmationService.confirm({
+      key: 'delete',
       icon: PrimeIcons.TRASH,
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
       accept: () => this.acceptDeleteItems(),
       reject: () => this.rejectDeleteItems(),
     });
   }
 
   acceptDeleteItems() {
-    console.log(`Delete items: ${JSON.stringify(this.taskItems)}`);
+    const datumMapper: DatumMapper = (server, item, datum) => {
+      this.taskItem = item;
+      this.taskDatum = datum;
+      return this.angminService.deleteValue$(server, item, datum);
+    };
+
+    this.taskMax = this.taskItems.reduce((total, item) => total + item.length, 0);
+    this.taskCurrent = 0;
+    this.taskDatum = '...';
+    this.taskType = TaskType.Delete;
+    this.task = this.angminService
+      .mapItemsData$(
+        this.server(),
+        this.taskItems.map((item) => item.name),
+        datumMapper,
+      )
+      .subscribe({
+        next: () => ++this.taskCurrent,
+        error: (error) => {
+          this.lastError = error;
+        },
+        complete: () => this.completeDeleteItems(),
+      });
   }
 
   rejectDeleteItems() {
     this.messageService.add({severity: 'info', summary: 'Delete cancelled'});
+  }
+
+  cancelDeleteItems() {
+    this.task.unsubscribe();
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Delete cancelled',
+      detail: `Deleted data #: ${this.taskCurrent}/${this.taskMax}`,
+    });
+  }
+
+  completeDeleteItems() {
+    this.refreshItems();
+    this.messageService.add({
+      severity: this.taskCurrent === this.taskMax ? 'success' : 'warn',
+      summary: 'Delete completed',
+      detail: `Deleted data #: ${this.taskCurrent}`,
+    });
   }
 
   getRefreshSeverity() {
@@ -241,6 +280,24 @@ export class ServerComponent implements OnInit, OnDestroy {
     } else {
       return undefined;
     }
+  }
+
+  filterTable(value: string) {
+    this.table().filter(value, 'name', 'contains');
+  }
+
+  clearSearch() {
+    this.searchElementRef().nativeElement.value = '';
+    this.filterTable('');
+  }
+
+  resetTable() {
+    this.clearSearch();
+
+    const table = this.table();
+    table.sortField = 'name';
+    table.sortOrder = 1;
+    table.sortSingle();
   }
 
   protected removeChipsInput(event: Event) {

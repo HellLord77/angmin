@@ -4,41 +4,7 @@
   [closable]="false"
   [draggable]="false"
   [modal]="true"
-  [visible]="state === State.Loading"
-  contentStyleClass="w-30rem"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.HOURGLASS"
-      label="Loading documents..."
-      styleClass="p-dialog-title"
-    />
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    <div class="flex-column align-items-center container">
-      <p-progressSpinner />
-      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
-      <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
-    </div>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button
-      [disabled]="!lastRefresh"
-      [icon]="PrimeIcons.TIMES"
-      (onClick)="cancelRefresh()"
-      label="Cancel"
-      severity="danger"
-    />
-  </ng-template>
-</p-dialog>
-
-<p-dialog
-  [closable]="false"
-  [draggable]="false"
-  [modal]="true"
-  [visible]="state === State.Errored"
+  [visible]="lastError !== undefined"
   contentStyleClass="w-30rem"
 >
   <ng-template pTemplate="header">
@@ -63,10 +29,10 @@
           <app-icon-label
             class="text-danger"
             [icon]="PrimeIcons.TIMES_CIRCLE"
-            [label]="lastError.name"
+            [label]="lastError!.name"
           />
           <div class="pl-4">
-            {{ lastError.message }}
+            {{ lastError!.message }}
           </div>
         </ng-template>
       </p-panel>
@@ -145,69 +111,51 @@
 <app-confirm-dialog
   [(items)]="taskData"
   [headerIcon]="PrimeIcons.MINUS_CIRCLE"
-  [icon]="PrimeIcons.TRASH"
   [itemIcon]="PrimeIcons.FILE"
-  acceptButtonStyleClass="p-button-danger"
-  acceptLabel="Delete"
+  key="delete"
   headerLabel="Confirm documents delete"
   itemField="id"
-  rejectLabel="Cancel"
 />
 
-<p-dialog
-  [closable]="false"
-  [draggable]="false"
-  [modal]="true"
-  [visible]="!task.closed"
-  styleClass="w-30rem"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.HAMMER"
-      label="Deleting documents..."
-      styleClass="p-dialog-title"
-    />
-  </ng-template>
+<app-progress-dialog
+  [cancelDisabled]="!lastRefresh"
+  [item]="item()"
+  [server]="server()"
+  [visible]="!task.closed && taskType === TaskType.Read"
+  (onCancel)="cancelRefreshData()"
+  headerLabel="Loading documents..."
+/>
 
-  <ng-template pTemplate="content">
-    <div class="flex-column align-items-center container">
-      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
-      <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
-      <app-icon-label
-        [icon]="PrimeIcons.FILE"
-        label="Document: {{ taskDatum ? taskDatum.id : '...' }}"
-      />
-    </div>
-    <p-divider class="flex flex-column align-items-center" styleClass="w-9" />
-    <p-progressBar [value]="taskValue" />
-    <app-icon-label
-      class="flex flex-column align-items-center"
-      [icon]="PrimeIcons.TRASH"
-      label="{{ taskComplete | number }}/{{ taskTotal | number }}"
-    />
-  </ng-template>
+<app-progress-dialog
+  [datum]="taskDatum"
+  [item]="item()"
+  [progress]="taskCurrent"
+  [progressIcon]="PrimeIcons.TRASH"
+  [progressMax]="taskMax"
+  [server]="server()"
+  [visible]="!task.closed && taskType === TaskType.Delete"
+  (onCancel)="cancelDeleteData()"
+  headerLabel="Deleting documents..."
+/>
 
-  <ng-template pTemplate="footer">
-    <p-button
-      [icon]="PrimeIcons.TIMES"
-      (onClick)="cancelDeleteData()"
-      label="Cancel"
-      severity="danger"
-    />
-  </ng-template>
-</p-dialog>
+<app-progress-dialog
+  [item]="item()"
+  [server]="server()"
+  [visible]="!task.closed && taskType === TaskType.Update"
+  (onCancel)="cancelEditData()"
+  headerLabel="Editing document..."
+/>
 
 <p-contextMenu #context [model]="contextMenu" />
 
 <p-table
   [(contextMenuSelection)]="contextDatum"
   [(selection)]="selectedData"
-  [columns]="selectedColumns.length ? selectedColumns : columns"
+  [columns]="selectedColumns?.length ? selectedColumns : columns"
   [contextMenu]="context"
   [lazy]="true"
-  [loading]="state === State.Loading"
   [paginator]="true"
-  [rowsPerPageOptions]="[10, 25, 50]"
+  [rowsPerPageOptions]="[10, 25, 50, 100]"
   [rows]="10"
   [scrollable]="true"
   [showJumpToPageDropdown]="true"
@@ -304,9 +252,9 @@
         <div class="container">
           <p-multiSelect
             [(ngModel)]="selectedColumns"
-            [loading]="state === State.Loading"
             [options]="columns"
             [showClear]="true"
+            styleClass="w-20rem"
             display="chip"
             placeholder="Select fields..."
           />
@@ -338,8 +286,8 @@
           />
         </th>
       }
-      <th class="w-9rem" alignFrozen="right" pFrozenColumn>
-        <app-icon-table-header [icon]="PrimeIcons.FILE_EDIT" label="Edit" />
+      <th alignFrozen="right" pFrozenColumn>
+        <app-icon-table-header [icon]="PrimeIcons.FILE_EDIT" label="Edit" styleClass="w-7rem" />
       </th>
     </tr>
   </ng-template>

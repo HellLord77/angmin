@@ -3,35 +3,32 @@ import {Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {pluralize} from 'inflection';
-import {findIndex, flatten, keys, map} from 'lodash-es';
 import {ConfirmationService, MenuItem, MessageService, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
 import {ChipsModule} from 'primeng/chips';
 import {ContextMenuModule} from 'primeng/contextmenu';
 import {DialogModule} from 'primeng/dialog';
-import {DividerModule} from 'primeng/divider';
 import {FileUploadHandlerEvent, FileUploadModule} from 'primeng/fileupload';
-import {InputGroupModule} from 'primeng/inputgroup';
-import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
 import {MultiSelectModule} from 'primeng/multiselect';
 import {PanelModule} from 'primeng/panel';
-import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
 import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
-import {concatMap, from, NEVER, Observable, Subscription} from 'rxjs';
+import {concatMap, from, NEVER, Observable} from 'rxjs';
 
 import {ConfirmDialogComponent} from '../../libs/confirm-dialog/confirm-dialog.component';
 import {IconLabelComponent} from '../../libs/icon-label/icon-label.component';
 import {IconTableHeaderComponent} from '../../libs/icon-table-header/icon-table-header.component';
+import {ProgressDialogComponent} from '../../libs/progress-dialog/progress-dialog.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
-import {State} from '../enums/state';
+import {TaskType} from '../enums/task-type';
 import {Datum} from '../models/datum.model';
 import {PaginatedData} from '../models/paginated-data.model';
 import {AngminService} from '../services/angmin.service';
+import {DatumMapper} from '../types/datum-mapper';
 
 @Component({
   selector: 'app-item',
@@ -43,8 +40,6 @@ import {AngminService} from '../services/angmin.service';
     BadgeModule,
     DatePipe,
     FileUploadModule,
-    InputGroupAddonModule,
-    InputGroupModule,
     SplitButtonModule,
     TableModule,
     ToolbarModule,
@@ -55,11 +50,10 @@ import {AngminService} from '../services/angmin.service';
     PanelModule,
     ChipsModule,
     IconLabelComponent,
-    ProgressSpinnerModule,
     IconTableHeaderComponent,
     ConfirmDialogComponent,
     DecimalPipe,
-    DividerModule,
+    ProgressDialogComponent,
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
@@ -111,20 +105,18 @@ export class ItemComponent implements OnDestroy {
     },
   ];
 
-  state = State.Loading;
   chooseExportVisible = false;
-  lastError!: Error;
+  lastError?: Error;
   lastRefresh?: Date;
-  refreshTask!: Subscription;
 
-  task: Subscription = NEVER.subscribe();
-  taskTotal = 0;
-  taskComplete = 0;
-  taskDatum?: Datum;
-  protected taskValue = 0;
+  taskType = TaskType.Read;
+  task = NEVER.subscribe();
+  taskMax = 0;
+  taskCurrent = 0;
+  taskDatum = '...';
 
   columns: string[] = [];
-  selectedColumns: string[] = [];
+  selectedColumns?: string[];
   foreignColumns = new Map<string, string>();
 
   paginatedData: PaginatedData = {
@@ -138,34 +130,28 @@ export class ItemComponent implements OnDestroy {
   };
   selectedData: Datum[] = [];
   taskData: Datum[] = [];
-  readonly #clonedData = new Map<string, Datum>();
+  readonly clonedData = new Map<string, Datum>();
   contextDatum!: Datum;
 
   protected readonly PrimeIcons = PrimeIcons;
-  protected readonly State = State;
   protected readonly ActionType = ActionType;
+  protected readonly TaskType = TaskType;
   protected readonly ExportType = ExportType;
 
-  constructor() {
-    this.task.unsubscribe();
-  }
-
   ngOnDestroy() {
-    this.refreshTask?.unsubscribe();
     this.task.unsubscribe();
   }
 
   refreshData() {
+    this.lastError = undefined;
+
     const table = this.table();
+    this.clonedData.forEach((datum) => table.cancelRowEdit(datum));
+    this.clonedData.clear();
 
-    this.state = State.Loading;
-    for (const datum of this.#clonedData.values()) {
-      table.cancelRowEdit(datum);
-    }
-    this.#clonedData.clear();
-
-    this.refreshTask = this.angminService
-      .getData$(
+    this.taskType = TaskType.Read;
+    this.task = this.angminService
+      .readData$(
         this.server(),
         this.item(),
         table.first! / table.rows! + 1,
@@ -175,7 +161,7 @@ export class ItemComponent implements OnDestroy {
       .subscribe({
         next: (paginatedData) => {
           this.paginatedData = paginatedData;
-          const columns = new Set(flatten(paginatedData.data.map((datum) => keys(datum))));
+          const columns = new Set(paginatedData.data.flatMap((datum) => Object.keys(datum)));
           columns.delete('id');
           this.columns = [...columns];
           this.foreignColumns = new Map();
@@ -184,31 +170,32 @@ export class ItemComponent implements OnDestroy {
               this.foreignColumns.set(column, pluralize(column.slice(0, -2)));
             }
           });
-          this.selectedColumns = [];
-          const dataIds = new Set(map(paginatedData.data, 'id'));
+          this.selectedColumns = undefined;
+          const dataIds = new Set(paginatedData.data.map((datum) => datum.id));
           this.selectedData = this.selectedData.filter((datum) => dataIds.has(datum.id));
-          this.lastRefresh = new Date();
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Collection loaded',
-            detail: `Data #: ${paginatedData.items}`,
-          });
-          this.state = State.Loaded;
         },
         error: (error) => {
           this.lastError = error;
-          this.state = State.Errored;
         },
+        complete: () => this.completeRefreshData(),
       });
   }
 
-  cancelRefresh() {
-    this.refreshTask?.unsubscribe();
-    this.state = State.Cancelled;
+  completeRefreshData() {
+    this.lastRefresh = new Date();
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Collection loaded',
+      detail: `Data #: ${this.paginatedData.items}`,
+    });
   }
 
-  resetTable() {
-    this.table().reset();
+  cancelRefreshData() {
+    this.task.unsubscribe();
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Refresh cancelled',
+    });
   }
 
   handleImportData(fileUploadHandlerEvent: FileUploadHandlerEvent) {
@@ -242,49 +229,50 @@ export class ItemComponent implements OnDestroy {
     }
 
     this.confirmationService.confirm({
+      key: 'delete',
       icon: PrimeIcons.TRASH,
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
       accept: () => this.acceptDeleteData(),
       reject: () => this.rejectDeleteData(),
     });
   }
 
   acceptDeleteData() {
-    let taskData$: Observable<Datum>;
+    const datumMapper: DatumMapper = (server, item, datum) => {
+      this.taskDatum = datum;
+      return this.angminService.deleteValue$(server, item, datum);
+    };
+
+    let taskMap$: Observable<Datum>;
     if (this.taskData.length) {
-      this.taskTotal = this.taskData.length;
-      taskData$ = from(this.taskData);
+      this.taskMax = this.taskData.length;
+      taskMap$ = this.angminService.mapData$(
+        this.server(),
+        this.item(),
+        this.taskData.map((datum) => datum.id),
+        datumMapper,
+      );
     } else {
-      this.taskTotal = this.paginatedData.items;
-      taskData$ = this.angminService.iterData$(this.server(), this.item());
+      this.taskMax = this.paginatedData.items;
+      taskMap$ = this.angminService.mapItemsData$(this.server(), [this.item()], datumMapper);
     }
 
-    this.taskComplete = 0;
-    this.taskValue = 0;
-    this.taskDatum = undefined;
-    this.task = taskData$
-      .pipe(
-        concatMap((datum) => this.angminService.deleteValue$(this.server(), this.item(), datum.id)),
-      )
-      .subscribe({
-        next: (datum) => {
-          this.taskDatum = datum;
-          this.taskValue = Math.ceil((++this.taskComplete / this.taskTotal) * 100);
-        },
-        complete: () => this.completeDeleteData(),
-      });
+    this.taskCurrent = 0;
+    this.taskDatum = '...';
+    this.taskType = TaskType.Delete;
+    this.task = taskMap$.subscribe({
+      next: () => ++this.taskCurrent,
+      error: (error) => {
+        this.lastError = error;
+      },
+      complete: () => this.completeDeleteData(),
+    });
   }
 
   rejectDeleteData() {
     this.messageService.add({severity: 'info', summary: 'Delete cancelled'});
-  }
-
-  completeDeleteData() {
-    this.refreshData();
-    this.messageService.add({
-      severity: this.taskComplete === this.taskTotal ? 'success' : 'warn',
-      summary: 'Delete completed',
-      detail: `Deleted data #: ${this.taskComplete}`,
-    });
   }
 
   cancelDeleteData() {
@@ -292,23 +280,63 @@ export class ItemComponent implements OnDestroy {
     this.messageService.add({
       severity: 'error',
       summary: 'Delete cancelled',
-      detail: `Deleted data #: ${this.taskComplete}/${this.taskTotal}`,
+      detail: `Deleted data #: ${this.taskCurrent}/${this.taskMax}`,
+    });
+  }
+
+  completeDeleteData() {
+    this.refreshData();
+    this.messageService.add({
+      severity: this.taskCurrent === this.taskMax ? 'success' : 'warn',
+      summary: 'Delete completed',
+      detail: `Deleted data #: ${this.taskCurrent}`,
     });
   }
 
   initEditDatum(datum: Datum) {
-    this.#clonedData.set(datum.id, {...datum});
+    this.clonedData.set(datum.id, {...datum});
   }
 
   saveEditDatum(datum: Datum) {
-    console.log(`Save data: ${JSON.stringify(datum)}`);
+    this.clonedData.delete(datum.id);
+
+    // TODO: filter unmodified values
+
+    this.taskData = [datum];
+    this.taskDatum = datum.id;
+    this.taskType = TaskType.Update;
+    this.task = from(this.taskData)
+      .pipe(
+        concatMap((datum) => this.angminService.updateValue$(this.server(), this.item(), datum)),
+      )
+      .subscribe({
+        error: (error) => {
+          this.lastError = error;
+        },
+        complete: () => this.completeEditData(),
+      });
   }
 
   cancelEditDatum(datum: Datum) {
-    const index = findIndex(this.paginatedData.data, {id: datum.id});
-    this.paginatedData.data[index] = this.#clonedData.get(datum.id)!;
-    this.#clonedData.delete(datum.id);
+    const index = this.paginatedData.data.findIndex((thisDatum) => thisDatum.id === datum.id);
+    this.paginatedData.data[index] = this.clonedData.get(datum.id)!;
+    this.clonedData.delete(datum.id);
     this.messageService.add({severity: 'info', summary: 'Edit cancelled'});
+  }
+
+  cancelEditData() {
+    this.task.unsubscribe();
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Edit cancelled',
+    });
+  }
+
+  completeEditData() {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Edit completed',
+    });
   }
 
   getRefreshSeverity() {
@@ -324,6 +352,10 @@ export class ItemComponent implements OnDestroy {
     } else {
       return undefined;
     }
+  }
+
+  resetTable() {
+    this.table().reset();
   }
 
   isEditColumnDisabled(value: unknown) {

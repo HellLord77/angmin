@@ -1,4 +1,4 @@
-p-chips::ng-deep ul {
+p-chips::ng-deep .p-chips-multiple-container {
   width: 100%;
   cursor: unset;
 }

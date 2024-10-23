@@ -14,4 +14,5 @@ export class IconTableHeaderComponent {
   icon = input('');
   label = input('');
   sortField = input('');
+  styleClass = input('');
 }
