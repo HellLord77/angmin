@@ -1,0 +1,22 @@
+<p-button
+  [icon]="PrimeIcons.ARROW_LEFT"
+  [outlined]="true"
+  label="Back"
+  routerLink="../"
+  severity="secondary"
+/>
+
+<div
+  class="select-none"
+  [badgeDisabled]="!lastRefresh()"
+  [severity]="getRefreshSeverity()"
+  [value]="(lastRefresh() | date:'shortTime')!"
+  pBadge
+>
+  <p-button
+    [icon]="PrimeIcons.REFRESH"
+    [outlined]="refreshOutlined()"
+    (onClick)="onRefresh.emit()"
+    label="Refresh"
+  />
+</div>

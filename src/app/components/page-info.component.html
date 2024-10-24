@@ -1,0 +1,13 @@
+<p-card>
+  <ng-template pTemplate="content">
+    <div class="container flex-column" [class.align-items-center]="center()">
+      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
+      @if (item()) {
+        <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
+        @if (datum()) {
+          <app-icon-label [icon]="PrimeIcons.FILE" label="Document: {{ datum() }}" />
+        }
+      }
+    </div>
+  </ng-template>
+</p-card>

@@ -1,11 +1,12 @@
 <p-toolbar styleClass="h-full py-0">
   <ng-template pTemplate="start">
-    <p-breadcrumb [home]="home" [model]="navigationMenu">
+    <p-breadcrumb class="py-2" [home]="home" [model]="navigationMenu">
       <ng-template let-item pTemplate="item">
         <p-tag [icon]="item.icon" [routerLink]="item.route" [value]="item.label" />
       </ng-template>
     </p-breadcrumb>
   </ng-template>
+
   <ng-template pTemplate="end">
     <div class="align-items-center flex">
       <p-buttonGroup class="w-full">

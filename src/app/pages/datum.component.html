@@ -1,0 +1,97 @@
+<p-toast />
+
+<app-error-dialog
+  [error]="lastError"
+  [server]="server()"
+  [item]="item()"
+  [datum]="datum()"
+  (onRefresh)="refreshValue()"
+/>
+
+<app-progress-dialog
+  [cancelDisabled]="!lastRefresh"
+  [headerIcon]="PrimeIcons.SPINNER"
+  [item]="item()"
+  [server]="server()"
+  [datum]="datum()"
+  [visible]="!task.closed && taskType === TaskType.Read"
+  (onCancel)="cancelRefreshValue()"
+  headerLabel="Loading documents..."
+/>
+
+<p-panel>
+  <ng-template pTemplate="header">
+    <p-toolbar class="w-full">
+      <ng-template pTemplate="left">
+        <app-page-control
+          [lastRefresh]="lastRefresh"
+          [refreshOutlined]="true"
+          (onRefresh)="refreshValue()"
+        />
+      </ng-template>
+
+      <ng-template pTemplate="center">
+        <app-icon-label
+          [icon]="PrimeIcons.FILE"
+          label="Document: {{ datum() }}"
+          deepClass="header"
+        />
+      </ng-template>
+
+      <ng-template pTemplate="right">
+        <p-button [disabled]="true" label="Save" />
+      </ng-template>
+    </p-toolbar>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <p-tabView>
+      <p-tabPanel header="Simple" headerStyleClass="">
+        <!-- disable if editor lint diagnostic error -->
+        <p>Lots of forms!</p>
+      </p-tabPanel>
+
+      <p-tabPanel header="Advanced">
+        <div class="container flex-column">
+          <p-toolbar>
+            <ng-template pTemplate="left">
+              <div class="container">
+                <p-selectButton
+                  [(ngModel)]="extensions"
+                  [allowEmpty]="false"
+                  [options]="setups"
+                  dataKey="setup"
+                  optionLabel="setup"
+                  optionValue="extensions"
+                />
+                <p-toggleButton
+                  [(ngModel)]="highlightWhitespace"
+                  [offIcon]="PrimeIcons.EYE_SLASH"
+                  [onIcon]="PrimeIcons.EYE"
+                  offLabel="Whitespace"
+                  onLabel="Whitespace"
+                />
+              </div>
+            </ng-template>
+
+            <ng-template pTemplate="right">
+              <div class="container">
+                <p-button [icon]="PrimeIcons.WRENCH" (onClick)="repairEditor()" label="Repair" />
+                <p-button [icon]="PrimeIcons.SPARKLES" (onClick)="formatEditor()" label="Format" />
+              </div>
+            </ng-template>
+          </p-toolbar>
+
+          <p-card>
+            <code-editor
+              [(ngModel)]="value"
+              [extensions]="extensions"
+              [highlightWhitespace]="highlightWhitespace"
+              [setup]="null"
+            />
+          </p-card>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </ng-template>
+</p-panel>

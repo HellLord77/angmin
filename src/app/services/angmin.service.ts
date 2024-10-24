@@ -1,15 +1,16 @@
 import {inject, Injectable} from '@angular/core';
 import {SortMeta} from 'primeng/api';
-import {catchError, concatMap, from, map, throwError} from 'rxjs';
+import {catchError, concatMap, from, map, Observable, throwError} from 'rxjs';
 
 import {UndefinedAlias} from '../errors/undefined-alias.error';
 import {UnparsableHtml} from '../errors/unparsable-html.error';
 import {UnreachableServer} from '../errors/unreachable-server.error';
 import {Datum} from '../models/datum.model';
 import {Item} from '../models/item.model';
-import {DatumMapper} from '../types/datum-mapper';
 import {NetworkService} from './network.service';
 import {StorageService} from './storage.service';
+
+export type DatumMapper = (alias: string, item: string, id: string) => Observable<Datum>;
 
 @Injectable({
   providedIn: 'root',

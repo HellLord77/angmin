@@ -9,9 +9,9 @@ import {Component, input} from '@angular/core';
   styleUrl: './icon-label.component.css',
 })
 export class IconLabelComponent {
-  iconLeft = input('', {alias: 'icon'});
+  icon = input('');
+  spin = input(false);
   label = input('');
-  iconRight = input('');
+  deepClass = input('');
   styleClass = input('');
-  iconStyleClass = input('');
 }

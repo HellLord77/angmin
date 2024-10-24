@@ -21,16 +21,17 @@ import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
 import {NEVER} from 'rxjs';
 
-import {ConfirmDialogComponent} from '../../libs/confirm-dialog/confirm-dialog.component';
-import {IconLabelComponent} from '../../libs/icon-label/icon-label.component';
-import {IconTableHeaderComponent} from '../../libs/icon-table-header/icon-table-header.component';
-import {ProgressDialogComponent} from '../../libs/progress-dialog/progress-dialog.component';
+import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
+import {ErrorDialogComponent} from '../components/error-dialog.component';
+import {IconTableHeaderComponent} from '../components/icon-table-header.component';
+import {PageControlComponent} from '../components/page-control.component';
+import {ProgressDialogComponent} from '../components/progress-dialog.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
 import {TaskType} from '../enums/task-type';
+import {IconLabelComponent} from '../icon-label.component';
 import {Item} from '../models/item.model';
-import {AngminService} from '../services/angmin.service';
-import {DatumMapper} from '../types/datum-mapper';
+import {AngminService, DatumMapper} from '../services/angmin.service';
 
 @Component({
   selector: 'app-server',
@@ -61,6 +62,8 @@ import {DatumMapper} from '../types/datum-mapper';
     IconTableHeaderComponent,
     ConfirmDialogComponent,
     ProgressDialogComponent,
+    PageControlComponent,
+    ErrorDialogComponent,
   ],
   templateUrl: './server.component.html',
   styleUrl: './server.component.css',
@@ -300,7 +303,7 @@ export class ServerComponent implements OnInit, OnDestroy {
     table.sortSingle();
   }
 
-  protected removeChipsInput(event: Event) {
+  removeChipsInput(event: Event) {
     const inputElement = event.target as HTMLInputElement;
     inputElement.remove();
   }

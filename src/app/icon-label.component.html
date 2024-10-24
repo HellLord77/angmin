@@ -1,0 +1,6 @@
+<div class="container align-items-center" [class]="styleClass()" [ngClass]="deepClass()">
+  @if (icon()) {
+    <i [class]="icon()" [ngClass]="deepClass()" [class.pi-spin]="spin()"></i>
+  }
+  {{ label() }}
+</div>

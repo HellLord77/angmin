@@ -6,7 +6,8 @@ import {DialogModule} from 'primeng/dialog';
 import {DividerModule} from 'primeng/divider';
 import {ProgressBarModule} from 'primeng/progressbar';
 
-import {IconLabelComponent} from '../icon-label/icon-label.component';
+import {IconLabelComponent} from '../icon-label.component';
+import {PageInfoComponent} from './page-info.component';
 
 @Component({
   selector: 'app-progress-dialog',
@@ -19,16 +20,18 @@ import {IconLabelComponent} from '../icon-label/icon-label.component';
     IconLabelComponent,
     PrimeTemplate,
     ProgressBarModule,
+    PageInfoComponent,
   ],
   templateUrl: './progress-dialog.component.html',
   styleUrl: './progress-dialog.component.css',
 })
 export class ProgressDialogComponent {
-  visible = input.required<boolean>();
-  headerLabel = input.required<string>();
   server = input.required<string>();
   item = input<string>();
   datum = input<string>();
+  visible = input.required<boolean>();
+  headerIcon = input(PrimeIcons.SPINNER_DOTTED);
+  headerLabel = input.required<string>();
   progressMax = input<number>(0);
   progressIcon = input<string>();
   progress = input<number>(0);

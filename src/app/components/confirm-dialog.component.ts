@@ -4,7 +4,7 @@ import {PrimeTemplate} from 'primeng/api';
 import {ChipsModule} from 'primeng/chips';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 
-import {IconLabelComponent} from '../icon-label/icon-label.component';
+import {IconLabelComponent} from '../icon-label.component';
 
 @Component({
   selector: 'app-confirm-dialog',

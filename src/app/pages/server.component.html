@@ -1,59 +1,6 @@
 <p-toast />
 
-<p-dialog
-  [closable]="false"
-  [draggable]="false"
-  [modal]="true"
-  [visible]="lastError !== undefined"
-  contentStyleClass="w-30rem"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.EXCLAMATION_TRIANGLE"
-      label="An error occurred"
-      styleClass="p-dialog-title"
-    />
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    <div class="flex-column container">
-      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
-      <div></div>
-      <p-panel [collapsed]="true" [toggleable]="true">
-        <ng-template pTemplate="header">
-          <app-icon-label class="p-panel-title" [icon]="PrimeIcons.CODE" label="Error details" />
-        </ng-template>
-
-        <ng-template pTemplate="content">
-          <app-icon-label
-            class="text-danger"
-            [icon]="PrimeIcons.TIMES_CIRCLE"
-            [label]="lastError!.name"
-          />
-          <div class="pl-4">
-            {{ lastError!.message }}
-          </div>
-        </ng-template>
-      </p-panel>
-    </div>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button
-      [icon]="PrimeIcons.ARROW_LEFT"
-      [outlined]="true"
-      label="Back"
-      routerLink="../"
-      severity="secondary"
-    />
-    <p-button
-      [icon]="PrimeIcons.REFRESH"
-      (onClick)="refreshItems()"
-      label="Refresh"
-      severity="primary"
-    />
-  </ng-template>
-</p-dialog>
+<app-error-dialog [error]="lastError" [server]="server()" (onRefresh)="refreshItems()" />
 
 <p-dialog
   [(visible)]="chooseExportVisible"
@@ -67,7 +14,7 @@
     <app-icon-label
       [icon]="PrimeIcons.FILE_EXPORT"
       label="Choose collections export format"
-      styleClass="p-dialog-title"
+      deepClass="p-dialog-title"
     />
   </ng-template>
 
@@ -116,6 +63,7 @@
   [cancelDisabled]="!lastRefresh"
   [server]="server()"
   [visible]="!task.closed && taskType === TaskType.Read"
+  [headerIcon]="PrimeIcons.SPINNER"
   (onCancel)="cancelRefreshItems()"
   headerLabel="Loading collections..."
 />
@@ -174,7 +122,7 @@
         <app-icon-label
           [icon]="PrimeIcons.DATABASE"
           label="Database: {{ server() }}"
-          styleClass="header"
+          deepClass="header"
         />
       </ng-template>
 
@@ -201,29 +149,11 @@
 
     <p-toolbar styleClass="border-noround-top">
       <ng-template pTemplate="left">
-        <div class="container">
-          <p-button
-            [icon]="PrimeIcons.ARROW_LEFT"
-            [outlined]="true"
-            label="Back"
-            routerLink="../"
-            severity="secondary"
-          />
-          <div
-            class="select-none"
-            [badgeDisabled]="!lastRefresh"
-            [severity]="getRefreshSeverity()"
-            [value]="(lastRefresh | date:'shortTime')!"
-            pBadge
-          >
-            <p-button
-              [icon]="PrimeIcons.REFRESH"
-              [outlined]="true"
-              (onClick)="refreshItems()"
-              label="Refresh"
-            />
-          </div>
-        </div>
+        <app-page-control
+          [lastRefresh]="lastRefresh"
+          [refreshOutlined]="true"
+          (onRefresh)="refreshItems()"
+        />
       </ng-template>
 
       <ng-template pTemplate="right">
@@ -304,7 +234,7 @@
           class="m-auto block w-fit"
           [icon]="PrimeIcons.SEARCH_MINUS"
           label="No collection found"
-          styleClass="header"
+          deepClass="header"
         />
       </td>
     </tr>

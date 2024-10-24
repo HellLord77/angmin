@@ -1,0 +1,42 @@
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [modal]="true"
+  [visible]="error() !== undefined"
+  contentStyleClass="w-30rem"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      [icon]="PrimeIcons.EXCLAMATION_TRIANGLE"
+      label="An error occurred"
+      deepClass="p-dialog-title"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <div class="container flex-column">
+      <app-page-info [server]="server()" [item]="item()" [datum]="datum()" />
+      <div></div>
+      <p-panel [collapsed]="true" [toggleable]="true">
+        <ng-template pTemplate="header">
+          <app-icon-label class="p-panel-title" [icon]="PrimeIcons.CODE" label="Error details" />
+        </ng-template>
+
+        <ng-template pTemplate="content">
+          <app-icon-label
+            class="text-danger"
+            [icon]="PrimeIcons.TIMES_CIRCLE"
+            [label]="error()!.name"
+          />
+          <div class="pl-4">
+            {{ error()!.message }}
+          </div>
+        </ng-template>
+      </p-panel>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <app-page-control (onRefresh)="onRefresh.emit()" />
+  </ng-template>
+</p-dialog>

@@ -1,60 +1,11 @@
 <p-toast />
 
-<p-dialog
-  [closable]="false"
-  [draggable]="false"
-  [modal]="true"
-  [visible]="lastError !== undefined"
-  contentStyleClass="w-30rem"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.EXCLAMATION_TRIANGLE"
-      label="An error occurred"
-      styleClass="p-dialog-title"
-    />
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    <div class="flex-column container">
-      <app-icon-label [icon]="PrimeIcons.DATABASE" label="Database: {{ server() }}" />
-      <app-icon-label [icon]="PrimeIcons.TABLE" label="Collection: {{ item() }}" />
-      <div></div>
-      <p-panel [collapsed]="true" [toggleable]="true">
-        <ng-template pTemplate="header">
-          <app-icon-label class="p-panel-title" [icon]="PrimeIcons.CODE" label="Error details" />
-        </ng-template>
-
-        <ng-template pTemplate="content">
-          <app-icon-label
-            class="text-danger"
-            [icon]="PrimeIcons.TIMES_CIRCLE"
-            [label]="lastError!.name"
-          />
-          <div class="pl-4">
-            {{ lastError!.message }}
-          </div>
-        </ng-template>
-      </p-panel>
-    </div>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button
-      [icon]="PrimeIcons.ARROW_LEFT"
-      [outlined]="true"
-      label="Back"
-      routerLink="../"
-      severity="secondary"
-    />
-    <p-button
-      [icon]="PrimeIcons.REFRESH"
-      (onClick)="refreshData()"
-      label="Refresh"
-      severity="primary"
-    />
-  </ng-template>
-</p-dialog>
+<app-error-dialog
+  [error]="lastError"
+  [server]="server()"
+  [item]="item()"
+  (onRefresh)="refreshData()"
+/>
 
 <p-dialog
   [(visible)]="chooseExportVisible"
@@ -68,7 +19,7 @@
     <app-icon-label
       [icon]="PrimeIcons.FILE_EXPORT"
       label="Choose documents export format"
-      styleClass="p-dialog-title"
+      deepClass="p-dialog-title"
     />
   </ng-template>
 
@@ -119,6 +70,7 @@
 
 <app-progress-dialog
   [cancelDisabled]="!lastRefresh"
+  [headerIcon]="PrimeIcons.SPINNER"
   [item]="item()"
   [server]="server()"
   [visible]="!task.closed && taskType === TaskType.Read"
@@ -196,7 +148,7 @@
         <app-icon-label
           [icon]="PrimeIcons.TABLE"
           label="Collection: {{ item() }}"
-          styleClass="header"
+          deepClass="header"
         />
       </ng-template>
 
@@ -223,29 +175,11 @@
 
     <p-toolbar styleClass="border-noround-top">
       <ng-template pTemplate="left">
-        <div class="container">
-          <p-button
-            [icon]="PrimeIcons.ARROW_LEFT"
-            [outlined]="true"
-            label="Back"
-            routerLink="../"
-            severity="secondary"
-          />
-          <div
-            class="select-none"
-            [badgeDisabled]="!lastRefresh"
-            [severity]="getRefreshSeverity()"
-            [value]="(lastRefresh | date:'shortTime')!"
-            pBadge
-          >
-            <p-button
-              [icon]="PrimeIcons.REFRESH"
-              [outlined]="true"
-              (onClick)="refreshData()"
-              label="Refresh"
-            />
-          </div>
-        </div>
+        <app-page-control
+          [lastRefresh]="lastRefresh"
+          [refreshOutlined]="true"
+          (onRefresh)="refreshData()"
+        />
       </ng-template>
 
       <ng-template pTemplate="right">
@@ -287,7 +221,7 @@
         </th>
       }
       <th alignFrozen="right" pFrozenColumn>
-        <app-icon-table-header [icon]="PrimeIcons.FILE_EDIT" label="Edit" styleClass="w-7rem" />
+        <app-icon-table-header class="w-7rem" [icon]="PrimeIcons.FILE_EDIT" label="Edit" />
       </th>
     </tr>
   </ng-template>
@@ -329,7 +263,7 @@
           </p-cellEditor>
         </td>
       }
-      <td alignFrozen="right" pFrozenColumn>
+      <td class="w-7rem" alignFrozen="right" pFrozenColumn>
         <div class="container justify-content-center">
           @if (editing) {
             <p-button
@@ -364,7 +298,7 @@
           class="m-auto block w-fit"
           [icon]="PrimeIcons.SEARCH_MINUS"
           label="No document found"
-          styleClass="header"
+          deepClass="header"
         />
       </td>
     </tr>

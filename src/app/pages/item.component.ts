@@ -18,17 +18,18 @@ import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
 import {concatMap, from, NEVER, Observable} from 'rxjs';
 
-import {ConfirmDialogComponent} from '../../libs/confirm-dialog/confirm-dialog.component';
-import {IconLabelComponent} from '../../libs/icon-label/icon-label.component';
-import {IconTableHeaderComponent} from '../../libs/icon-table-header/icon-table-header.component';
-import {ProgressDialogComponent} from '../../libs/progress-dialog/progress-dialog.component';
+import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
+import {ErrorDialogComponent} from '../components/error-dialog.component';
+import {IconTableHeaderComponent} from '../components/icon-table-header.component';
+import {PageControlComponent} from '../components/page-control.component';
+import {ProgressDialogComponent} from '../components/progress-dialog.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
 import {TaskType} from '../enums/task-type';
+import {IconLabelComponent} from '../icon-label.component';
 import {Datum} from '../models/datum.model';
 import {PaginatedData} from '../models/paginated-data.model';
-import {AngminService} from '../services/angmin.service';
-import {DatumMapper} from '../types/datum-mapper';
+import {AngminService, DatumMapper} from '../services/angmin.service';
 
 @Component({
   selector: 'app-item',
@@ -54,6 +55,8 @@ import {DatumMapper} from '../types/datum-mapper';
     ConfirmDialogComponent,
     DecimalPipe,
     ProgressDialogComponent,
+    PageControlComponent,
+    ErrorDialogComponent,
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
@@ -339,21 +342,6 @@ export class ItemComponent implements OnDestroy {
     });
   }
 
-  getRefreshSeverity() {
-    if (this.lastRefresh) {
-      const delta = new Date().valueOf() - this.lastRefresh.valueOf();
-      if (delta <= 30 * 1000) {
-        return 'success';
-      } else if (delta <= 60 * 1000) {
-        return 'warning';
-      } else {
-        return 'danger';
-      }
-    } else {
-      return undefined;
-    }
-  }
-
   resetTable() {
     this.table().reset();
   }
@@ -362,7 +350,7 @@ export class ItemComponent implements OnDestroy {
     return typeof value !== 'string';
   }
 
-  protected removeChipsInput(event: Event) {
+  removeChipsInput(event: Event) {
     const inputElement = event.target as HTMLInputElement;
     inputElement.remove();
   }
