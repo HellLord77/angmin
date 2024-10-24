@@ -1,12 +1,11 @@
 import {inject, Injectable} from '@angular/core';
 import {SortMeta} from 'primeng/api';
-import {catchError, concatMap, from, map, Observable, throwError} from 'rxjs';
+import {catchError, concatMap, from, map, Observable, Subscriber, timer} from 'rxjs';
 
 import {UndefinedAlias} from '../errors/undefined-alias.error';
-import {UnparsableHtml} from '../errors/unparsable-html.error';
-import {UnreachableServer} from '../errors/unreachable-server.error';
 import {Datum} from '../models/datum.model';
 import {Item} from '../models/item.model';
+import {Server} from '../models/server.model';
 import {NetworkService} from './network.service';
 import {StorageService} from './storage.service';
 
@@ -21,6 +20,32 @@ export class AngminService {
 
   getServers() {
     return this.storageService.getServers();
+  }
+
+  getServer$(alias: string) {
+    return new Observable((subscriber: Subscriber<Server>) => {
+      const server = this.storageService.getServer(alias);
+      if (server === undefined) {
+        throw new UndefinedAlias(alias);
+      }
+
+      subscriber.next(server);
+      subscriber.complete();
+    });
+  }
+
+  #delayError<T>(observable: Observable<T>): Observable<T> {
+    const end = 1000 + window.performance.now();
+
+    return observable.pipe(
+      catchError((error) =>
+        timer(end - window.performance.now()).pipe(
+          concatMap(() => {
+            throw error;
+          }),
+        ),
+      ),
+    );
   }
 
   #getItems(html: string): Item[] {
@@ -67,68 +92,56 @@ export class AngminService {
   }
 
   readItems$(alias: string) {
-    const server = this.storageService.getServer(alias);
-    if (server === undefined) {
-      return throwError(() => new UndefinedAlias(alias));
-    }
-
-    return this.networkService.getServer$(server).pipe(
-      catchError(() => {
-        throw new UnreachableServer(server);
-      }),
-      map((html: string) => {
-        try {
-          return this.#getItems(html);
-        } catch {
-          throw new UnparsableHtml(html);
-        }
-      }),
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) => this.networkService.getServer$(server)),
+        map((html) => this.#getItems(html)),
+      ),
     );
   }
 
   readData$(alias: string, name: string, page: number, per_page: number, sortMetas: SortMeta[]) {
-    const server = this.storageService.getServer(alias);
-    if (server === undefined) {
-      return throwError(() => new UndefinedAlias(alias));
-    }
-
     const sort = sortMetas
       .map((sortMeta) => `${sortMeta.order === 1 ? '' : '-'}${sortMeta.field}`)
       .toString();
 
-    return this.networkService.getItemsPaginated$(server, name, page, per_page, sort);
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) =>
+          this.networkService.getItemsPaginated$(server, name, page, per_page, sort),
+        ),
+      ),
+    );
   }
 
   readValue$(alias: string, name: string, id: string) {
-    const server = this.storageService.getServer(alias);
-    if (server === undefined) {
-      return throwError(() => new UndefinedAlias(alias));
-    }
-
-    return this.networkService
-      .getValue$(server, name, id)
-      .pipe(map((datum) => JSON.stringify(datum, null, 2)));
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) => this.networkService.getValue$(server, name, id)),
+        map((datum) => JSON.stringify(datum, null, 2)),
+      ),
+    );
   }
 
   updateValue$(alias: string, name: string, datum: Datum) {
-    const server = this.storageService.getServer(alias);
-    if (server === undefined) {
-      return throwError(() => new UndefinedAlias(alias));
-    }
-
     const partialDatum: Partial<Datum> = {...datum};
     delete partialDatum.id;
 
-    return this.networkService.patchValue$(server, name, datum.id, partialDatum);
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) =>
+          this.networkService.patchValue$(server, name, datum.id, partialDatum),
+        ),
+      ),
+    );
   }
 
   deleteValue$(alias: string, name: string, id: string) {
-    const server = this.storageService.getServer(alias);
-    if (server === undefined) {
-      return throwError(() => new UndefinedAlias(alias));
-    }
-
-    return this.networkService.deleteValue$(server, name, id);
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) => this.networkService.deleteValue$(server, name, id)),
+      ),
+    );
   }
 
   mapData$(alias: string, name: string, ids: string[], datumMapper: DatumMapper) {

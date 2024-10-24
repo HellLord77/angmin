@@ -157,7 +157,7 @@ export class ItemComponent implements OnDestroy {
       .readData$(
         this.server(),
         this.item(),
-        table.first! / table.rows! + 1,
+        1 + table.first! / table.rows!,
         table.rows!,
         table.multiSortMeta ?? [],
       )
