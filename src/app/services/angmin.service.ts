@@ -106,7 +106,7 @@ export class AngminService {
 
     return this.networkService
       .getValue$(server, name, id)
-      .pipe(map((datum) => JSON.stringify(datum)));
+      .pipe(map((datum) => JSON.stringify(datum, null, 2)));
   }
 
   updateValue$(alias: string, name: string, datum: Datum) {
