@@ -2,7 +2,7 @@ import {DatePipe, DecimalPipe, PercentPipe} from '@angular/common';
 import {Component, ElementRef, inject, input, OnDestroy, OnInit, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {ConfirmationService, MenuItem, MessageService, PrimeIcons} from 'primeng/api';
+import {ConfirmationService, MenuItem, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
 import {ChipsModule} from 'primeng/chips';
@@ -17,7 +17,6 @@ import {PanelModule} from 'primeng/panel';
 import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
-import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
 import {NEVER} from 'rxjs';
 
@@ -32,6 +31,7 @@ import {TaskType} from '../enums/task-type';
 import {IconLabelComponent} from '../icon-label.component';
 import {Item} from '../models/item.model';
 import {AngminService, DatumMapper} from '../services/angmin.service';
+import {NotificationService} from '../services/notification.service';
 
 @Component({
   selector: 'app-server',
@@ -52,7 +52,6 @@ import {AngminService, DatumMapper} from '../services/angmin.service';
     InputGroupAddonModule,
     DialogModule,
     ContextMenuModule,
-    ToastModule,
     PanelModule,
     DividerModule,
     ChipsModule,
@@ -67,15 +66,15 @@ import {AngminService, DatumMapper} from '../services/angmin.service';
   ],
   templateUrl: './server.component.html',
   styleUrl: './server.component.css',
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
 })
 export class ServerComponent implements OnInit, OnDestroy {
   server = input.required<string>();
 
   activatedRoute = inject(ActivatedRoute);
   router = inject(Router);
-  messageService = inject(MessageService);
   confirmationService = inject(ConfirmationService);
+  notificationService = inject(NotificationService);
   angminService = inject(AngminService);
 
   searchElementRef = viewChild.required<ElementRef<HTMLInputElement>>('search');
@@ -166,29 +165,26 @@ export class ServerComponent implements OnInit, OnDestroy {
 
   cancelRefreshItems() {
     this.task.unsubscribe();
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Refresh cancelled',
-    });
+    this.notificationService.showCancelled(TaskType.Read, true);
   }
 
   completeRefreshItems() {
     this.lastRefresh = new Date();
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Database loaded',
-      detail: `Collections #: ${this.items.length}`,
-    });
+    this.notificationService.showCompleted(
+      TaskType.Read,
+      true,
+      `Collection #: ${this.items.length}`,
+    );
   }
 
   handleImportItems(fileUploadHandlerEvent: FileUploadHandlerEvent) {
     console.log(`Import items: ${fileUploadHandlerEvent}`);
   }
 
-  chooseExportItems(actionType: ActionType) {
-    if (actionType === ActionType.Context) {
+  chooseExportItems(type: ActionType) {
+    if (type === ActionType.Context) {
       this.taskItems = [this.contextItem];
-    } else if (actionType === ActionType.Selection) {
+    } else if (type === ActionType.Selection) {
       this.taskItems = [...this.selectedItems];
     } else {
       this.taskItems = [...this.items];
@@ -197,15 +193,15 @@ export class ServerComponent implements OnInit, OnDestroy {
     this.chooseExportVisible = true;
   }
 
-  chosenExportItems(exportType: ExportType) {
+  chosenExportItems(type: ExportType) {
     this.chooseExportVisible = false;
-    console.log(`Export items: .${exportType} ${JSON.stringify(this.taskItems)}`);
+    console.log(`Export items: .${type} ${JSON.stringify(this.taskItems)}`);
   }
 
-  confirmDeleteItems(actionType: ActionType) {
-    if (actionType === ActionType.Context) {
+  confirmDeleteItems(type: ActionType) {
+    if (type === ActionType.Context) {
       this.taskItems = [this.contextItem];
-    } else if (actionType === ActionType.Selection) {
+    } else if (type === ActionType.Selection) {
       this.taskItems = [...this.selectedItems];
     } else {
       this.taskItems = [...this.items];
@@ -249,40 +245,25 @@ export class ServerComponent implements OnInit, OnDestroy {
   }
 
   rejectDeleteItems() {
-    this.messageService.add({severity: 'info', summary: 'Delete cancelled'});
+    this.notificationService.showCancelled(TaskType.Delete, false);
   }
 
   cancelDeleteItems() {
     this.task.unsubscribe();
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Delete cancelled',
-      detail: `Deleted data #: ${this.taskCurrent}/${this.taskMax}`,
-    });
+    this.notificationService.showCancelled(
+      TaskType.Delete,
+      true,
+      `Deleted #: ${this.taskCurrent}/${this.taskMax}`,
+    );
   }
 
   completeDeleteItems() {
     this.refreshItems();
-    this.messageService.add({
-      severity: this.taskCurrent === this.taskMax ? 'success' : 'warn',
-      summary: 'Delete completed',
-      detail: `Deleted data #: ${this.taskCurrent}`,
-    });
-  }
-
-  getRefreshSeverity() {
-    if (this.lastRefresh) {
-      const delta = new Date().valueOf() - this.lastRefresh.valueOf();
-      if (delta <= 30 * 1000) {
-        return 'success';
-      } else if (delta <= 60 * 1000) {
-        return 'warning';
-      } else {
-        return 'danger';
-      }
-    } else {
-      return undefined;
-    }
+    this.notificationService.showCompleted(
+      TaskType.Delete,
+      this.taskCurrent === this.taskMax,
+      `Deleted #: ${this.taskCurrent}`,
+    );
   }
 
   filterTable(value: string) {

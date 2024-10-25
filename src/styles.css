@@ -26,3 +26,11 @@ td {
   display: flex;
   gap: 0.5rem;
 }
+
+.animation-direction-alternate {
+  animation-direction: alternate;
+}
+
+.animation-direction-alternate-reverse {
+  animation-direction: alternate-reverse;
+}

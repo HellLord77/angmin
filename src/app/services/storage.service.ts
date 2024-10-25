@@ -10,6 +10,7 @@ import {Server} from '../models/server.model';
 export class StorageService {
   #scale = -2;
   #theme: Theme = Theme.Dark;
+  #notify = true;
   #servers = new Map<string, Server>().set('localHost', {
     alias: 'localHost',
     hostname: 'localhost',
@@ -31,6 +32,14 @@ export class StorageService {
 
   setTheme(theme: Theme) {
     this.#theme = theme;
+  }
+
+  getNotify() {
+    return this.#notify;
+  }
+
+  setNotify(notify: boolean) {
+    this.#notify = notify;
   }
 
   getServer(alias: string) {

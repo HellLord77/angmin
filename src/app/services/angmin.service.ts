@@ -100,7 +100,25 @@ export class AngminService {
     );
   }
 
-  readData$(alias: string, name: string, page: number, per_page: number, sortMetas: SortMeta[]) {
+  readData$(alias: string, name: string, sortMetas: SortMeta[]) {
+    const sort = sortMetas
+      .map((sortMeta) => `${sortMeta.order === 1 ? '' : '-'}${sortMeta.field}`)
+      .toString();
+
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) => this.networkService.getItem$(server, name, sort)),
+      ),
+    );
+  }
+
+  readPaginatedData$(
+    alias: string,
+    name: string,
+    page: number,
+    per_page: number,
+    sortMetas: SortMeta[],
+  ) {
     const sort = sortMetas
       .map((sortMeta) => `${sortMeta.order === 1 ? '' : '-'}${sortMeta.field}`)
       .toString();
@@ -108,7 +126,7 @@ export class AngminService {
     return this.#delayError(
       this.getServer$(alias).pipe(
         concatMap((server) =>
-          this.networkService.getItemsPaginated$(server, name, page, per_page, sort),
+          this.networkService.getItemPaginated$(server, name, page, per_page, sort),
         ),
       ),
     );
@@ -124,6 +142,14 @@ export class AngminService {
   }
 
   updateValue$(alias: string, name: string, datum: Datum) {
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) => this.networkService.putValue$(server, name, datum.id, datum)),
+      ),
+    );
+  }
+
+  updatePartialValue$(alias: string, name: string, datum: Datum) {
     const partialDatum: Partial<Datum> = {...datum};
     delete partialDatum.id;
 
@@ -155,7 +181,7 @@ export class AngminService {
     per_page: number,
     datumMapper: DatumMapper,
   ) {
-    return this.readData$(alias, name, page, per_page, []).pipe(
+    return this.readPaginatedData$(alias, name, page, per_page, []).pipe(
       concatMap((paginatedData) =>
         this.mapData$(
           alias,
@@ -180,7 +206,7 @@ export class AngminService {
   }
 
   mapItemData$(alias: string, name: string, datumMapper: DatumMapper) {
-    return this.readData$(alias, name, 1, 100, []).pipe(
+    return this.readPaginatedData$(alias, name, 1, 100, []).pipe(
       concatMap((paginatedData) =>
         this.mapPagesData$(
           alias,

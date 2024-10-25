@@ -34,7 +34,12 @@ export class NetworkService {
     return this.httpClient.get(this.#getUrl(server), {responseType: 'text'});
   }
 
-  getItemsPaginated$(server: Server, name: string, page: number, per_page: number, sort: string) {
+  getItem$(server: Server, name: string, sort: string) {
+    const params = new HttpParams().set('_sort', sort);
+    return this.httpClient.get<Datum[]>(this.#getUrl(server, [name]), {params});
+  }
+
+  getItemPaginated$(server: Server, name: string, page: number, per_page: number, sort: string) {
     const params = new HttpParams()
       .set('_page', page.toString())
       .set('_per_page', per_page.toString())
@@ -42,12 +47,16 @@ export class NetworkService {
     return this.httpClient.get<PaginatedData>(this.#getUrl(server, [name]), {params});
   }
 
+  postItem$(server: Server, name: string, datum: Partial<Datum>) {
+    return this.httpClient.post<Datum>(this.#getUrl(server, [name]), datum);
+  }
+
   getValue$(server: Server, name: string, id: string) {
     return this.httpClient.get<Datum>(this.#getUrl(server, [name, id]));
   }
 
-  postValue$(server: Server, name: string, datum: Partial<Datum>) {
-    return this.httpClient.post<Datum>(this.#getUrl(server, [name]), datum);
+  putValue$(server: Server, name: string, id: string, value: Datum) {
+    return this.httpClient.put<Datum>(this.#getUrl(server, [name, id]), value);
   }
 
   patchValue$(server: Server, name: string, id: string, value: Partial<Datum>) {

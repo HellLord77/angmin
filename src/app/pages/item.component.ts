@@ -3,7 +3,7 @@ import {Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {pluralize} from 'inflection';
-import {ConfirmationService, MenuItem, MessageService, PrimeIcons} from 'primeng/api';
+import {ConfirmationService, MenuItem, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
 import {ChipsModule} from 'primeng/chips';
@@ -14,7 +14,6 @@ import {MultiSelectModule} from 'primeng/multiselect';
 import {PanelModule} from 'primeng/panel';
 import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
-import {ToastModule} from 'primeng/toast';
 import {ToolbarModule} from 'primeng/toolbar';
 import {concatMap, from, NEVER, Observable} from 'rxjs';
 
@@ -30,6 +29,7 @@ import {IconLabelComponent} from '../icon-label.component';
 import {Datum} from '../models/datum.model';
 import {PaginatedData} from '../models/paginated-data.model';
 import {AngminService, DatumMapper} from '../services/angmin.service';
+import {NotificationService} from '../services/notification.service';
 
 @Component({
   selector: 'app-item',
@@ -44,7 +44,6 @@ import {AngminService, DatumMapper} from '../services/angmin.service';
     SplitButtonModule,
     TableModule,
     ToolbarModule,
-    ToastModule,
     ContextMenuModule,
     MultiSelectModule,
     FormsModule,
@@ -60,7 +59,7 @@ import {AngminService, DatumMapper} from '../services/angmin.service';
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
 })
 export class ItemComponent implements OnDestroy {
   server = input.required<string>();
@@ -68,8 +67,8 @@ export class ItemComponent implements OnDestroy {
 
   activatedRoute = inject(ActivatedRoute);
   router = inject(Router);
-  messageService = inject(MessageService);
   confirmationService = inject(ConfirmationService);
+  notificationService = inject(NotificationService);
   angminService = inject(AngminService);
 
   table = viewChild.required(Table);
@@ -154,7 +153,7 @@ export class ItemComponent implements OnDestroy {
 
     this.taskType = TaskType.Read;
     this.task = this.angminService
-      .readData$(
+      .readPaginatedData$(
         this.server(),
         this.item(),
         1 + table.first! / table.rows!,
@@ -184,31 +183,28 @@ export class ItemComponent implements OnDestroy {
       });
   }
 
-  completeRefreshData() {
-    this.lastRefresh = new Date();
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Collection loaded',
-      detail: `Data #: ${this.paginatedData.items}`,
-    });
-  }
-
   cancelRefreshData() {
     this.task.unsubscribe();
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Refresh cancelled',
-    });
+    this.notificationService.showCancelled(TaskType.Read, true);
+  }
+
+  completeRefreshData() {
+    this.lastRefresh = new Date();
+    this.notificationService.showCompleted(
+      TaskType.Read,
+      true,
+      `Document #: ${this.paginatedData.items}`,
+    );
   }
 
   handleImportData(fileUploadHandlerEvent: FileUploadHandlerEvent) {
     console.log(`Import data: ${fileUploadHandlerEvent}`);
   }
 
-  chooseExportData(actionType: ActionType) {
-    if (actionType === ActionType.Context) {
+  chooseExportData(type: ActionType) {
+    if (type === ActionType.Context) {
       this.taskData = [this.contextDatum];
-    } else if (actionType === ActionType.Selection) {
+    } else if (type === ActionType.Selection) {
       this.taskData = this.selectedData;
     } else {
       this.taskData = [];
@@ -217,15 +213,15 @@ export class ItemComponent implements OnDestroy {
     this.chooseExportVisible = true;
   }
 
-  chosenExportData(exportType: ExportType) {
+  chosenExportData(type: ExportType) {
     this.chooseExportVisible = false;
-    console.log(`Export data: .${exportType} ${JSON.stringify(this.taskData)}`);
+    console.log(`Export data: .${type} ${JSON.stringify(this.taskData)}`);
   }
 
-  confirmDeleteData(actionType: ActionType) {
-    if (actionType === ActionType.Context) {
+  confirmDeleteData(type: ActionType) {
+    if (type === ActionType.Context) {
       this.taskData = [this.contextDatum];
-    } else if (actionType === ActionType.Selection) {
+    } else if (type === ActionType.Selection) {
       this.taskData = this.selectedData;
     } else {
       this.taskData = [];
@@ -275,25 +271,25 @@ export class ItemComponent implements OnDestroy {
   }
 
   rejectDeleteData() {
-    this.messageService.add({severity: 'info', summary: 'Delete cancelled'});
+    this.notificationService.showCancelled(TaskType.Delete, false);
   }
 
   cancelDeleteData() {
     this.task.unsubscribe();
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Delete cancelled',
-      detail: `Deleted data #: ${this.taskCurrent}/${this.taskMax}`,
-    });
+    this.notificationService.showCancelled(
+      TaskType.Delete,
+      true,
+      `Deleted #: ${this.taskCurrent}/${this.taskMax}`,
+    );
   }
 
   completeDeleteData() {
     this.refreshData();
-    this.messageService.add({
-      severity: this.taskCurrent === this.taskMax ? 'success' : 'warn',
-      summary: 'Delete completed',
-      detail: `Deleted data #: ${this.taskCurrent}`,
-    });
+    this.notificationService.showCompleted(
+      TaskType.Delete,
+      this.taskCurrent === this.taskMax,
+      `Deleted #: ${this.taskCurrent}`,
+    );
   }
 
   initEditDatum(datum: Datum) {
@@ -304,8 +300,10 @@ export class ItemComponent implements OnDestroy {
     this.clonedData.delete(datum.id);
 
     // TODO: filter unmodified values
-
     this.taskData = [datum];
+
+    this.taskMax = 1;
+    this.taskCurrent = 0;
     this.taskDatum = datum.id;
     this.taskType = TaskType.Update;
     this.task = from(this.taskData)
@@ -313,6 +311,7 @@ export class ItemComponent implements OnDestroy {
         concatMap((datum) => this.angminService.updateValue$(this.server(), this.item(), datum)),
       )
       .subscribe({
+        next: () => ++this.taskCurrent,
         error: (error) => {
           this.lastError = error;
         },
@@ -324,22 +323,20 @@ export class ItemComponent implements OnDestroy {
     const index = this.paginatedData.data.findIndex((thisDatum) => thisDatum.id === datum.id);
     this.paginatedData.data[index] = this.clonedData.get(datum.id)!;
     this.clonedData.delete(datum.id);
-    this.messageService.add({severity: 'info', summary: 'Edit cancelled'});
+    this.notificationService.showCancelled(TaskType.Update, false);
   }
 
   cancelEditData() {
     this.task.unsubscribe();
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Edit cancelled',
-    });
+    this.notificationService.showCancelled(
+      TaskType.Update,
+      true,
+      `Updated #: ${this.taskCurrent}/${this.taskMax}`,
+    );
   }
 
   completeEditData() {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Edit completed',
-    });
+    this.notificationService.showCompleted(TaskType.Update, true, `Updated #: ${this.taskCurrent}`);
   }
 
   resetTable() {

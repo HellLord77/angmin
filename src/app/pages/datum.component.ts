@@ -8,13 +8,12 @@ import {linter, lintGutter} from '@codemirror/lint';
 import {Extension} from '@codemirror/state';
 import {basicSetup, minimalSetup} from 'codemirror';
 import {jsonrepair} from 'jsonrepair';
-import {MessageService, PrimeIcons} from 'primeng/api';
+import {PrimeIcons} from 'primeng/api';
 import {Button} from 'primeng/button';
 import {CardModule} from 'primeng/card';
 import {PanelModule} from 'primeng/panel';
 import {SelectButtonModule} from 'primeng/selectbutton';
 import {TabViewModule} from 'primeng/tabview';
-import {ToastModule} from 'primeng/toast';
 import {ToggleButtonModule} from 'primeng/togglebutton';
 import {ToolbarModule} from 'primeng/toolbar';
 import {NEVER} from 'rxjs';
@@ -26,6 +25,7 @@ import {TaskType} from '../enums/task-type';
 import {IconLabelComponent} from '../icon-label.component';
 import {EditorSetup} from '../models/editor-setup.model';
 import {AngminService} from '../services/angmin.service';
+import {NotificationService} from '../services/notification.service';
 import {VisualService} from '../services/visual.service';
 
 @Component({
@@ -43,21 +43,19 @@ import {VisualService} from '../services/visual.service';
     IconLabelComponent,
     PanelModule,
     PageControlComponent,
-    ToastModule,
     ErrorDialogComponent,
     ProgressDialogComponent,
   ],
   templateUrl: './datum.component.html',
   styleUrl: './datum.component.css',
-  providers: [MessageService],
 })
 export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
   server = input.required<string>();
   item = input.required<string>();
   datum = input.required<string>();
 
-  messageService = inject(MessageService);
   visualService = inject(VisualService);
+  notificationService = inject(NotificationService);
   angminService = inject(AngminService);
 
   codeEditor = viewChild.required(CodeEditor);
@@ -110,19 +108,12 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cancelRefreshValue() {
     this.task.unsubscribe();
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Refresh cancelled',
-    });
+    this.notificationService.showCancelled(TaskType.Read, true);
   }
 
   completeRefreshItems() {
     this.lastRefresh = new Date();
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Document loaded',
-      detail: `Value #: ${this.value.length}`,
-    });
+    this.notificationService.showCompleted(TaskType.Read, true, `Value #: ${this.value.length}`);
   }
 
   formatEditor() {

@@ -1,3 +1,4 @@
+import {NgClass} from '@angular/common';
 import {Component, inject, input, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {NavigationEnd, Router} from '@angular/router';
@@ -9,10 +10,16 @@ import {DividerModule} from 'primeng/divider';
 import {InputGroupModule} from 'primeng/inputgroup';
 import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
 import {InputSwitchModule} from 'primeng/inputswitch';
+import {MessagesModule} from 'primeng/messages';
+import {SidebarModule} from 'primeng/sidebar';
 import {TagModule} from 'primeng/tag';
+import {ToastModule} from 'primeng/toast';
+import {ToggleButtonModule} from 'primeng/togglebutton';
 import {ToolbarModule} from 'primeng/toolbar';
 
 import {Theme} from '../enums/theme';
+import {IconLabelComponent} from '../icon-label.component';
+import {NotificationService} from '../services/notification.service';
 import {VisualService} from '../services/visual.service';
 
 @Component({
@@ -30,6 +37,12 @@ import {VisualService} from '../services/visual.service';
     InputGroupModule,
     InputGroupAddonModule,
     ButtonDirective,
+    ToastModule,
+    SidebarModule,
+    IconLabelComponent,
+    MessagesModule,
+    ToggleButtonModule,
+    NgClass,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
@@ -41,11 +54,14 @@ export class HeaderComponent implements OnInit {
 
   router = inject(Router);
   visualService = inject(VisualService);
+  notificationService = inject(NotificationService);
 
+  sidebarVisible = false;
   home: MenuItem = {icon: PrimeIcons.HOME, routerLink: ['/']};
 
   scale!: number;
   theme!: Theme;
+  notify!: boolean;
 
   navigationMenu?: MenuItem[];
 
@@ -83,6 +99,7 @@ export class HeaderComponent implements OnInit {
 
     this.scale = this.visualService.storageService.getScale();
     this.theme = this.visualService.storageService.getTheme();
+    this.notify = this.notificationService.storageService.getNotify();
   }
 
   decreaseScale() {
@@ -95,5 +112,9 @@ export class HeaderComponent implements OnInit {
 
   updateTheme() {
     this.visualService.setTheme(this.theme);
+  }
+
+  updateNotify() {
+    this.notificationService.storageService.setNotify(this.notify);
   }
 }
