@@ -1,6 +1,6 @@
 {
   "name": "angmin",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,19 +8,21 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "lint:fix": "ng lint --fix"
+    "lint:fix": "ng lint --fix",
+    "json-server": "json-server fixtures/db.json",
+    "http-server": "http-server dist/angmin/browser"
   },
   "private": true,
   "dependencies": {
     "@acrodata/code-editor": "^0.5.0",
-    "@angular/animations": "^18.2.0",
-    "@angular/common": "^18.2.0",
-    "@angular/compiler": "^18.2.0",
-    "@angular/core": "^18.2.0",
-    "@angular/forms": "^18.2.0",
-    "@angular/platform-browser": "^18.2.0",
-    "@angular/platform-browser-dynamic": "^18.2.0",
-    "@angular/router": "^18.2.0",
+    "@angular/animations": "^18.2.9",
+    "@angular/common": "^18.2.9",
+    "@angular/compiler": "^18.2.9",
+    "@angular/core": "^18.2.9",
+    "@angular/forms": "^18.2.9",
+    "@angular/platform-browser": "^18.2.9",
+    "@angular/platform-browser-dynamic": "^18.2.9",
+    "@angular/router": "^18.2.9",
     "@codemirror/lang-json": "^6.0.1",
     "inflection": "^3.0.0",
     "jsonrepair": "^3.9.0",
@@ -32,9 +34,9 @@
     "zone.js": "~0.14.10"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^18.2.8",
-    "@angular/cli": "^18.2.8",
-    "@angular/compiler-cli": "^18.2.0",
+    "@angular-devkit/build-angular": "^18.2.9",
+    "@angular/cli": "^18.2.9",
+    "@angular/compiler-cli": "^18.2.9",
     "@types/jasmine": "~5.1.0",
     "angular-eslint": "18.3.1",
     "eslint": "^9.9.1",
@@ -42,7 +44,9 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "http-server": "^14.1.1",
     "jasmine-core": "~5.2.0",
+    "json-server": "^1.0.0-beta.3",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
@@ -51,7 +55,7 @@
     "prettier": "^3.3.3",
     "prettier-eslint": "^16.3.0",
     "prettier-plugin-organize-attributes": "^1.0.0",
-    "typescript": "~5.5.2",
+    "typescript": "~5.5.4",
     "typescript-eslint": "8.2.0"
   }
 }
