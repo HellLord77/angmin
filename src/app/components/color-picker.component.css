@@ -1,0 +1,3 @@
+p-selectButton::ng-deep .p-button {
+  flex-grow: 1;
+}

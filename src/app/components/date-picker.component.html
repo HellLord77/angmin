@@ -1,0 +1,36 @@
+<p-calendar
+  [(ngModel)]="date"
+  [inline]="true"
+  [showWeek]="true"
+  [showTime]="true"
+  hourFormat="12"
+/>
+<p-inputGroup>
+  <input [ngModel]="getValue()" [readOnly]="true" type="text" pInputText placeholder="Date" />
+  <button
+    [icon]="PrimeIcons.WINDOW_MINIMIZE"
+    (click)="datePick.emit(getValue())"
+    pButton
+    type="button"
+    severity="help"
+  ></button>
+</p-inputGroup>
+<p-selectButton
+  class="w-full"
+  [(ngModel)]="modes"
+  [unselectable]="modes.length === 1"
+  [multiple]="true"
+  [options]="modeOptions"
+  styleClass="flex"
+  optionLabel="0"
+  optionValue="1"
+/>
+<p-selectButton
+  class="w-full"
+  [(ngModel)]="format"
+  [allowEmpty]="false"
+  [options]="formatOptions"
+  styleClass="flex"
+  optionLabel="0"
+  optionValue="1"
+/>

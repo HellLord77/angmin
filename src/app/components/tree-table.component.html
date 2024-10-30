@@ -1,0 +1,156 @@
+<p-table
+  [expandedRowKeys]="expanded"
+  [value]="columns()"
+  [scrollable]="true"
+  (onRowReorder)="fixName()"
+  dataKey="name"
+  scrollHeight="flex"
+  styleClass="p-datatable-gridlines p-datatable-striped"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th class="w-1rem" pFrozenColumn></th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Value</th>
+      <th alignFrozen="right" pFrozenColumn>
+        <app-icon-table-header [icon]="PrimeIcons.PENCIL" label="Action" />
+      </th>
+    </tr>
+  </ng-template>
+
+  <ng-template let-column let-expanded="expanded" let-rowIndex="rowIndex" pTemplate="body">
+    <tr [pReorderableRow]="rowIndex">
+      <td pFrozenColumn>
+        <i [class]="PrimeIcons.BARS" pReorderableRowHandle></i>
+      </td>
+      <td class="w-1rem">
+        <input
+          [(ngModel)]="column.name"
+          [disabled]="isArray()"
+          (blur)="fixName(column)"
+          (keydown.end)="$event.stopPropagation()"
+          (keydown.home)="$event.stopPropagation()"
+          pInputText
+          type="text"
+        />
+      </td>
+      <td class="w-1rem">
+        <p-dropdown
+          class="w-9rem block"
+          [(ngModel)]="column.type"
+          [options]="types"
+          (onChange)="typeChanged(column)"
+          styleClass="w-full"
+          appendTo="body"
+          optionLabel="0"
+          optionValue="1"
+        />
+      </td>
+      <td>
+        <div class="flex flex-column align-items-center">
+          @switch (column.type) {
+            @case (ColumnType.Null) {
+              <p-button
+                class="w-full"
+                [icon]="PrimeIcons.BAN"
+                severity="secondary"
+                label="Null"
+                styleClass="w-full"
+              />
+            }
+            @case (ColumnType.Boolean) {
+              <p-selectButton
+                class="w-full"
+                [(ngModel)]="column.value"
+                [options]="booleanOptions"
+                [allowEmpty]="false"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="flex"
+              />
+            }
+            @case (ColumnType.Number) {
+              <p-inputNumber
+                class="min-w-full"
+                [(ngModel)]="column.value"
+                [allowEmpty]="false"
+                [maxFractionDigits]="20"
+                [showButtons]="true"
+                [useGrouping]="false"
+                (keydown.home)="$event.stopPropagation()"
+                (keydown.end)="$event.stopPropagation()"
+                styleClass="min-w-full"
+              />
+            }
+            @case (ColumnType.String) {
+              <p-inputGroup>
+                <input
+                  [(ngModel)]="column.value"
+                  (keydown.home)="$event.stopPropagation()"
+                  (keydown.end)="$event.stopPropagation()"
+                  pInputText
+                  type="text"
+                />
+
+                <p-overlayPanel #dateOverlayPanel>
+                  <app-date-picker (datePick)="column.value = $event; dateOverlayPanel.hide()" />
+                </p-overlayPanel>
+                <button
+                  [icon]="PrimeIcons.CALENDAR"
+                  (click)="dateOverlayPanel.toggle($event)"
+                  pButton
+                  type="button"
+                ></button>
+
+                <p-overlayPanel #colorOverlayPanel>
+                  <app-color-picker (colorPick)="column.value = $event; colorOverlayPanel.hide()" />
+                </p-overlayPanel>
+                <button
+                  [icon]="PrimeIcons.PALETTE"
+                  (click)="colorOverlayPanel.toggle($event)"
+                  pButton
+                  type="button"
+                ></button>
+              </p-inputGroup>
+            }
+            @default {
+              <p-button
+                class="w-full"
+                [icon]="expanded ? PrimeIcons.CHEVRON_DOWN : PrimeIcons.CHEVRON_RIGHT"
+                [pRowToggler]="column"
+                severity="info"
+                styleClass="w-full"
+              />
+            }
+          }
+        </div>
+      </td>
+      <td class="w-1rem" alignFrozen="right" pFrozenColumn>
+        <div class="container">
+          <p-button [icon]="PrimeIcons.PLUS" (onClick)="add(rowIndex)" severity="success" />
+          <p-button [icon]="PrimeIcons.MINUS" (onClick)="delete(rowIndex)" severity="danger" />
+          <p-button [icon]="PrimeIcons.CLONE" (onClick)="clone(rowIndex)" severity="info" />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template let-column pTemplate="rowexpansion">
+    <tr>
+      <td colspan="100%">
+        <app-tree-table [columns]="column.columns" [isArray]="column.type === ColumnType.Array" />
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="100%">
+        <div class="container justify-content-center">
+          <p-button [icon]="PrimeIcons.PLUS" (onClick)="add(0)" severity="success" label="Add" />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

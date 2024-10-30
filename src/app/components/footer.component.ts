@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {heartBeatAnimation} from 'angular-animations';
 import {PrimeIcons} from 'primeng/api';
 
 @Component({
@@ -9,9 +10,12 @@ import {PrimeIcons} from 'primeng/api';
   styleUrl: './footer.component.css',
   host: {
     class:
-      'container align-items-center m-4 p-2 pl-3 fixed bottom-0 left-0 bg-blue-900 border-round shadow-5 font-bold',
+      'container align-items-center m-3 p-2 pl-3 fixed bottom-0 left-0 surface-hover border-round shadow-5 font-bold select-none',
   },
+  animations: [heartBeatAnimation({delay: 1000})],
 })
 export class FooterComponent {
+  protected animationState = false;
+
   protected readonly PrimeIcons = PrimeIcons;
 }

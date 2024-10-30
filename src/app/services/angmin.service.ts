@@ -136,7 +136,6 @@ export class AngminService {
     return this.#delayError(
       this.getServer$(alias).pipe(
         concatMap((server) => this.networkService.getValue$(server, name, id)),
-        map((datum) => JSON.stringify(datum, null, 2)),
       ),
     );
   }

@@ -31,8 +31,8 @@
         (onFocus)="removeChipsInput($event)"
         styleClass="w-full"
       >
-        <ng-template let-item pTemplate="item">
-          <app-icon-label [icon]="PrimeIcons.FILE" [label]="item.id" />
+        <ng-template let-datum pTemplate="item">
+          <app-icon-label [icon]="PrimeIcons.FILE" [label]="datum.id" />
         </ng-template>
       </p-chips>
       <!-- TODO: empty exportData -->
@@ -59,7 +59,7 @@
 
 <app-confirm-dialog
   [(items)]="taskData"
-  [headerIcon]="PrimeIcons.MINUS_CIRCLE"
+  [headerIcon]="PrimeIcons.TIMES_CIRCLE"
   [itemIcon]="PrimeIcons.FILE"
   key="delete"
   headerLabel="Confirm documents delete"
@@ -120,7 +120,7 @@
 >
   <ng-template pTemplate="caption">
     <p-toolbar styleClass="border-noround-bottom">
-      <ng-template pTemplate="start">
+      <ng-template pTemplate="left">
         <div class="container">
           <p-fileUpload
             [auto]="true"
@@ -150,7 +150,7 @@
         />
       </ng-template>
 
-      <ng-template pTemplate="end">
+      <ng-template pTemplate="right">
         <div class="container">
           <p-button [disabled]="true" [icon]="PrimeIcons.PLUS" label="Add" severity="success" />
           <p-splitButton
@@ -236,15 +236,47 @@
         <td>
           <p-cellEditor>
             <ng-template pTemplate="input">
-              <input
-                class="min-w-full"
-                [(ngModel)]="datum[column]"
-                [disabled]="isEditColumnDisabled(datum[column])"
-                (keydown.home)="$event.stopPropagation()"
-                (keydown.end)="$event.stopPropagation()"
-                pInputText
-                type="text"
-              />
+              <div class="flex flex-column align-items-center">
+                @switch (datum[column] | type) {
+                  @case (ColumnType.Undefined) {}
+                  @case (ColumnType.Null) {
+                    <p-checkbox [disabled]="true" />
+                  }
+                  @case (ColumnType.Boolean) {
+                    <p-inputSwitch [(ngModel)]="datum[column]" />
+                  }
+                  @case (ColumnType.Number) {
+                    <p-inputNumber
+                      [(ngModel)]="datum[column]"
+                      [allowEmpty]="false"
+                      [maxFractionDigits]="20"
+                      [showButtons]="true"
+                      [useGrouping]="false"
+                      (keydown.home)="$event.stopPropagation()"
+                      (keydown.end)="$event.stopPropagation()"
+                    />
+                  }
+                  @case (ColumnType.String) {
+                    <input
+                      class="min-w-full"
+                      [(ngModel)]="datum[column]"
+                      (keydown.home)="$event.stopPropagation()"
+                      (keydown.end)="$event.stopPropagation()"
+                      pInputText
+                      type="text"
+                    />
+                  }
+                  @default {
+                    <input
+                      class="min-w-full"
+                      [ngModel]="datum[column] | string"
+                      [disabled]="true"
+                      pInputText
+                      type="text"
+                    />
+                  }
+                }
+              </div>
             </ng-template>
 
             <ng-template pTemplate="output">
@@ -255,7 +287,7 @@
                   [routerLink]="['../', foreignColumns.get(column), datum[column]]"
                 />
               } @else {
-                {{ datum[column] }}
+                {{ datum[column] | string }}
               }
             </ng-template>
           </p-cellEditor>

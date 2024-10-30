@@ -25,9 +25,9 @@ export class PageControlComponent {
     const lastRefresh = this.lastRefresh();
     if (lastRefresh) {
       const delta = new Date().valueOf() - lastRefresh.valueOf();
-      if (delta <= 30 * 1000) {
+      if (delta <= 60 * 1000) {
         return 'success';
-      } else if (delta <= 60 * 1000) {
+      } else if (delta <= 3 * 60 * 1000) {
         return 'warning';
       } else {
         return 'danger';

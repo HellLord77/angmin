@@ -1,5 +1,6 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
+import {PrimeNGConfig} from 'primeng/api';
 
 import {FooterComponent} from './components/footer.component';
 import {HeaderComponent} from './components/header.component';
@@ -13,4 +14,10 @@ import {HeaderComponent} from './components/header.component';
 })
 export class AppComponent {
   title = 'angmin';
+
+  primeNGConfig = inject(PrimeNGConfig);
+
+  constructor() {
+    this.primeNGConfig.ripple = true;
+  }
 }

@@ -1,7 +1,7 @@
 import {Component, input} from '@angular/core';
 import {TableModule} from 'primeng/table';
 
-import {IconLabelComponent} from '../icon-label.component';
+import {IconLabelComponent} from './icon-label.component';
 
 @Component({
   selector: 'app-icon-table-header',

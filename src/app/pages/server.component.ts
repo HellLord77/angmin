@@ -22,13 +22,13 @@ import {NEVER} from 'rxjs';
 
 import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
 import {ErrorDialogComponent} from '../components/error-dialog.component';
+import {IconLabelComponent} from '../components/icon-label.component';
 import {IconTableHeaderComponent} from '../components/icon-table-header.component';
 import {PageControlComponent} from '../components/page-control.component';
 import {ProgressDialogComponent} from '../components/progress-dialog.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
 import {TaskType} from '../enums/task-type';
-import {IconLabelComponent} from '../icon-label.component';
 import {Item} from '../models/item.model';
 import {AngminService, DatumMapper} from '../services/angmin.service';
 import {NotificationService} from '../services/notification.service';

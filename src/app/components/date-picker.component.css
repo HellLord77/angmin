@@ -1,0 +1,7 @@
+p-calendar {
+  height: 36rem;
+}
+
+p-selectButton::ng-deep .p-button {
+  flex-grow: 1;
+}

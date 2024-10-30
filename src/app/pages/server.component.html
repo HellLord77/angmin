@@ -50,7 +50,7 @@
 
 <app-confirm-dialog
   [(items)]="taskItems"
-  [headerIcon]="PrimeIcons.MINUS_CIRCLE"
+  [headerIcon]="PrimeIcons.TIMES_CIRCLE"
   [itemIcon]="PrimeIcons.TABLE"
   key="delete"
   headerLabel="Confirm collections delete"
@@ -94,7 +94,7 @@
 >
   <ng-template pTemplate="caption">
     <p-toolbar styleClass="border-noround-bottom">
-      <ng-template pTemplate="start">
+      <ng-template pTemplate="left">
         <div class="container">
           <p-fileUpload
             [auto]="true"
@@ -124,7 +124,7 @@
         />
       </ng-template>
 
-      <ng-template pTemplate="end">
+      <ng-template pTemplate="right">
         <div class="container">
           <p-button [disabled]="true" [icon]="PrimeIcons.PLUS" label="Add" severity="success" />
           <p-splitButton
@@ -198,7 +198,7 @@
       <th pSortableColumn="length">
         <app-icon-table-header [icon]="PrimeIcons.HASHTAG" label="Objects" sortField="length" />
       </th>
-      <th class="w-1" pSortableColumn="length">
+      <th class="w-1rem" pSortableColumn="length">
         <app-icon-table-header
           [icon]="PrimeIcons.PERCENTAGE"
           label="Percentage"

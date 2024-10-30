@@ -1,7 +1,9 @@
 Made with
 <i
-  class="text-pink-500 zoomin animation-duration-1000 animation-iteration-infinite animation-ease-in-out animation-direction-alternate"
+  class="text-pink-500"
+  [@heartBeat]="animationState"
   [class]="PrimeIcons.HEART_FILL"
+  (@heartBeat.done)="animationState = !animationState"
 ></i>
 using <i class="text-blue-500" [class]="PrimeIcons.PRIME"></i> on
 <i class="text-danger" [class]="PrimeIcons.SHIELD">

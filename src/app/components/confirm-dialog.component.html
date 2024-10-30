@@ -13,7 +13,7 @@
       <p-chips
         class="w-full px-4"
         [autofocus]="true"
-        [disabled]="items().length <= 1"
+        [disabled]="items().length === 1"
         [ngModel]="items()"
         (ngModelChange)="itemsChange.emit($event)"
         (onFocus)="removeChipsInput($event)"

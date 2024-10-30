@@ -6,7 +6,7 @@ import {DialogModule} from 'primeng/dialog';
 import {DividerModule} from 'primeng/divider';
 import {ProgressBarModule} from 'primeng/progressbar';
 
-import {IconLabelComponent} from '../icon-label.component';
+import {IconLabelComponent} from './icon-label.component';
 import {PageInfoComponent} from './page-info.component';
 
 @Component({

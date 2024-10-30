@@ -18,9 +18,9 @@ import {ToggleButtonModule} from 'primeng/togglebutton';
 import {ToolbarModule} from 'primeng/toolbar';
 
 import {Theme} from '../enums/theme';
-import {IconLabelComponent} from '../icon-label.component';
 import {NotificationService} from '../services/notification.service';
 import {VisualService} from '../services/visual.service';
+import {IconLabelComponent} from './icon-label.component';
 
 @Component({
   selector: 'app-header',

@@ -4,6 +4,7 @@
   [modal]="true"
   [visible]="visible()"
   styleClass="w-30rem"
+  appendTo="body"
 >
   <ng-template pTemplate="header">
     <app-icon-label
@@ -18,15 +19,17 @@
     <div class="container flex-column">
       <app-page-info [server]="server()" [item]="item()" [datum]="datum()" [center]="true" />
       <div></div>
-      @if (progressMax()) {
+      @if (progress() && progressMax()) {
         <p-progressBar [value]="getProgressValue()" />
+      } @else {
+        <p-progressBar mode="indeterminate" />
+      }
+      @if (progressMax()) {
         <app-icon-label
           class="container flex-column align-items-center"
           [icon]="progressIcon()!"
-          label="{{ progress() | number }}/{{ progressMax() | number }}"
+          label="{{ progress() | number }} of {{ progressMax() | number }}"
         />
-      } @else {
-        <p-progressBar mode="indeterminate" />
       }
     </div>
   </ng-template>

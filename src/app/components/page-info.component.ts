@@ -3,7 +3,7 @@ import {Component, input} from '@angular/core';
 import {PrimeIcons} from 'primeng/api';
 import {CardModule} from 'primeng/card';
 
-import {IconLabelComponent} from '../icon-label.component';
+import {IconLabelComponent} from './icon-label.component';
 
 @Component({
   selector: 'app-page-info',

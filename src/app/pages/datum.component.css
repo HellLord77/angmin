@@ -1,0 +1,22 @@
+p-panel::ng-deep .p-toggleable-content {
+  flex-grow: 1;
+  height: 0;
+}
+
+p-panel::ng-deep .p-panel-content {
+  height: 100%;
+}
+
+/* TODO: only the very first */
+app-tree-table::ng-deep .p-datatable-thead {
+  z-index: 3;
+}
+
+code-editor,
+code-editor::ng-deep .cm-editor,
+code-editor::ng-deep .cm-gutters {
+  border-color: var(--surface-border);
+  border-radius: var(--border-radius);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}

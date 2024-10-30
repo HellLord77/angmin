@@ -3,7 +3,7 @@ import {PrimeIcons, PrimeTemplate} from 'primeng/api';
 import {DialogModule} from 'primeng/dialog';
 import {PanelModule} from 'primeng/panel';
 
-import {IconLabelComponent} from '../icon-label.component';
+import {IconLabelComponent} from './icon-label.component';
 import {PageControlComponent} from './page-control.component';
 import {PageInfoComponent} from './page-info.component';
 

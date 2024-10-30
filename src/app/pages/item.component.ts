@@ -1,4 +1,4 @@
-import {DatePipe, DecimalPipe} from '@angular/common';
+import {DatePipe, DecimalPipe, JsonPipe} from '@angular/common';
 import {Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
@@ -6,10 +6,13 @@ import {pluralize} from 'inflection';
 import {ConfirmationService, MenuItem, PrimeIcons} from 'primeng/api';
 import {BadgeModule} from 'primeng/badge';
 import {ButtonModule} from 'primeng/button';
+import {CheckboxModule} from 'primeng/checkbox';
 import {ChipsModule} from 'primeng/chips';
 import {ContextMenuModule} from 'primeng/contextmenu';
 import {DialogModule} from 'primeng/dialog';
 import {FileUploadHandlerEvent, FileUploadModule} from 'primeng/fileupload';
+import {InputNumberModule} from 'primeng/inputnumber';
+import {InputSwitchModule} from 'primeng/inputswitch';
 import {MultiSelectModule} from 'primeng/multiselect';
 import {PanelModule} from 'primeng/panel';
 import {SplitButtonModule} from 'primeng/splitbutton';
@@ -19,15 +22,18 @@ import {concatMap, from, NEVER, Observable} from 'rxjs';
 
 import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
 import {ErrorDialogComponent} from '../components/error-dialog.component';
+import {IconLabelComponent} from '../components/icon-label.component';
 import {IconTableHeaderComponent} from '../components/icon-table-header.component';
 import {PageControlComponent} from '../components/page-control.component';
 import {ProgressDialogComponent} from '../components/progress-dialog.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
 import {TaskType} from '../enums/task-type';
-import {IconLabelComponent} from '../icon-label.component';
+import {Type} from '../enums/type';
 import {Datum} from '../models/datum.model';
 import {PaginatedData} from '../models/paginated-data.model';
+import {StringPipe} from '../pipes/string.pipe';
+import {TypePipe} from '../pipes/type.pipe';
 import {AngminService, DatumMapper} from '../services/angmin.service';
 import {NotificationService} from '../services/notification.service';
 
@@ -56,6 +62,12 @@ import {NotificationService} from '../services/notification.service';
     ProgressDialogComponent,
     PageControlComponent,
     ErrorDialogComponent,
+    InputSwitchModule,
+    InputNumberModule,
+    JsonPipe,
+    TypePipe,
+    CheckboxModule,
+    StringPipe,
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
@@ -136,6 +148,7 @@ export class ItemComponent implements OnDestroy {
   contextDatum!: Datum;
 
   protected readonly PrimeIcons = PrimeIcons;
+  protected readonly ColumnType = Type;
   protected readonly ActionType = ActionType;
   protected readonly TaskType = TaskType;
   protected readonly ExportType = ExportType;
@@ -308,7 +321,9 @@ export class ItemComponent implements OnDestroy {
     this.taskType = TaskType.Update;
     this.task = from(this.taskData)
       .pipe(
-        concatMap((datum) => this.angminService.updateValue$(this.server(), this.item(), datum)),
+        concatMap((datum) =>
+          this.angminService.updatePartialValue$(this.server(), this.item(), datum),
+        ),
       )
       .subscribe({
         next: () => ++this.taskCurrent,
@@ -341,10 +356,6 @@ export class ItemComponent implements OnDestroy {
 
   resetTable() {
     this.table().reset();
-  }
-
-  isEditColumnDisabled(value: unknown) {
-    return typeof value !== 'string';
   }
 
   removeChipsInput(event: Event) {
