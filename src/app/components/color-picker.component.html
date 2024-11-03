@@ -1,18 +1,18 @@
-<p-colorPicker [(ngModel)]="color" [inline]="true" [hidden]="format !== ColorFormat.HEX" />
+<p-colorPicker [(ngModel)]="color" [hidden]="format !== ColorFormat.HEX" inline />
 <p-colorPicker
   [(ngModel)]="colorRGB"
-  [inline]="true"
   [hidden]="format !== ColorFormat.RGB"
   [format]="ColorFormat.RGB"
+  inline
 />
 <p-colorPicker
   [(ngModel)]="colorHSB"
   [hidden]="format !== ColorFormat.HSB"
-  [inline]="true"
   [format]="ColorFormat.HSB"
+  inline
 />
 <p-inputGroup>
-  <input [ngModel]="getValue()" [readOnly]="true" type="text" pInputText placeholder="Color" />
+  <input [ngModel]="getValue()" readOnly type="text" pInputText placeholder="Color" />
   <button
     [icon]="PrimeIcons.WINDOW_MINIMIZE"
     (click)="colorPick.emit(getValue())"

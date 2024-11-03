@@ -7,10 +7,10 @@
 
 <p-dialog
   [(visible)]="chooseExportVisible"
-  [dismissableMask]="true"
   [draggable]="false"
-  [modal]="true"
   [resizable]="false"
+  dismissableMask
+  modal
   styleClass="w-6"
 >
   <ng-template pTemplate="header">
@@ -26,9 +26,9 @@
       <p-chips
         class="w-full"
         [(ngModel)]="taskData"
-        [autofocus]="true"
         [disabled]="taskData.length === 1"
         (onFocus)="removeChipsInput($event)"
+        autofocus
         styleClass="w-full"
       >
         <ng-template let-datum pTemplate="item">
@@ -48,8 +48,8 @@
       severity="primary"
     />
     <p-button
-      [outlined]="true"
       (onClick)="chosenExportData(ExportType.CSV)"
+      outlined
       badge="{,}"
       label="CSV"
       severity="secondary"
@@ -103,15 +103,15 @@
   [(selection)]="selectedData"
   [columns]="selectedColumns?.length ? selectedColumns : columns"
   [contextMenu]="context"
-  [lazy]="true"
-  [paginator]="true"
   [rowsPerPageOptions]="[10, 25, 50, 100]"
   [rows]="10"
-  [scrollable]="true"
-  [showJumpToPageDropdown]="true"
   [totalRecords]="paginatedData.items"
   [value]="paginatedData.data"
   (onLazyLoad)="refreshData()"
+  lazy
+  paginator
+  scrollable
+  showJumpToPageDropdown
   dataKey="id"
   editMode="row"
   scrollHeight="flex"
@@ -123,10 +123,10 @@
       <ng-template pTemplate="left">
         <div class="container">
           <p-fileUpload
-            [auto]="true"
             [chooseIcon]="PrimeIcons.DOWNLOAD"
-            [customUpload]="true"
             (uploadHandler)="handleImportData($event)"
+            auto
+            customUpload
             accept=".csv,.json"
             chooseLabel="Import"
             mode="basic"
@@ -180,15 +180,15 @@
           <p-multiSelect
             [(ngModel)]="selectedColumns"
             [options]="columns"
-            [showClear]="true"
+            showClear
             styleClass="w-20rem"
             display="chip"
             placeholder="Select fields..."
           />
           <p-button
             [icon]="PrimeIcons.FILTER_SLASH"
-            [outlined]="true"
             (onClick)="resetTable()"
+            outlined
             label="Clear"
           />
         </div>
@@ -248,7 +248,7 @@
         <p-tableCheckbox [value]="datum" />
       </td>
       <td pFrozenColumn>
-        <p-button [label]="datum.id" [link]="true" [routerLink]="datum.id" />
+        <p-button [label]="datum.id" [routerLink]="datum.id" link />
       </td>
       @for (column of columns; track column) {
         <td>
@@ -270,10 +270,10 @@
                       [(ngModel)]="datum[column]"
                       [allowEmpty]="false"
                       [maxFractionDigits]="20"
-                      [showButtons]="true"
                       [useGrouping]="false"
                       (keydown.home)="$event.stopPropagation()"
                       (keydown.end)="$event.stopPropagation()"
+                      showButtons
                     />
                   }
                   @case (ColumnType.String) {
@@ -340,8 +340,8 @@
                   @if (foreignColumns.has(column)) {
                     <p-button
                       [label]="datum[column]"
-                      [link]="true"
                       [routerLink]="['../', foreignColumns.get(column), datum[column]]"
+                      link
                     />
                   } @else {
                     {{ datum[column] | string }}

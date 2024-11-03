@@ -1,12 +1,6 @@
-<p-calendar
-  [(ngModel)]="date"
-  [inline]="true"
-  [showWeek]="true"
-  [showTime]="true"
-  hourFormat="12"
-/>
+<p-calendar [(ngModel)]="date" [showTime]="true" inline showWeek hourFormat="12" />
 <p-inputGroup>
-  <input [ngModel]="getValue()" [readOnly]="true" type="text" pInputText placeholder="Date" />
+  <input [ngModel]="getValue()" readOnly type="text" pInputText placeholder="Date" />
   <button
     [icon]="PrimeIcons.WINDOW_MINIMIZE"
     (click)="datePick.emit(getValue())"
@@ -19,8 +13,8 @@
   class="w-full"
   [(ngModel)]="modes"
   [unselectable]="modes.length === 1"
-  [multiple]="true"
   [options]="modeOptions"
+  multiple
   styleClass="flex"
   optionLabel="0"
   optionValue="1"

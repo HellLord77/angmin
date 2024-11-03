@@ -1,8 +1,8 @@
 <p-table
   [expandedRowKeys]="expanded"
   [value]="columns()"
-  [scrollable]="true"
   (onRowReorder)="fixName()"
+  scrollable
   dataKey="name"
   scrollHeight="flex"
   styleClass="p-datatable-gridlines p-datatable-striped"
@@ -82,10 +82,10 @@
                   [(ngModel)]="column.value"
                   [allowEmpty]="false"
                   [maxFractionDigits]="20"
-                  [showButtons]="true"
                   [useGrouping]="false"
                   (keydown.home)="$event.stopPropagation()"
                   (keydown.end)="$event.stopPropagation()"
+                  showButtons
                   styleClass="min-w-full"
                 />
               }

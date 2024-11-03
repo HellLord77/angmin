@@ -1,6 +1,6 @@
 <p-confirmDialog
-  [dismissableMask]="true"
   [key]="key()"
+  dismissableMask
   rejectButtonStyleClass="p-button-outlined"
   styleClass="w-6"
   appendTo="body"
@@ -14,11 +14,11 @@
       <p-chips
         class="w-full px-4"
         [hidden]="items().length === 0"
-        [autofocus]="true"
         [disabled]="items().length === 1"
         [ngModel]="items()"
         (ngModelChange)="itemsChange.emit($event)"
         (onFocus)="removeChipsInput($event)"
+        autofocus
         styleClass="w-full"
       >
         <ng-template let-item pTemplate="item">

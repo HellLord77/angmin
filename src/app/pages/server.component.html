@@ -2,10 +2,10 @@
 
 <p-dialog
   [(visible)]="chooseExportVisible"
-  [dismissableMask]="true"
   [draggable]="false"
-  [modal]="true"
   [resizable]="false"
+  dismissableMask
+  modal
   styleClass="w-6"
 >
   <ng-template pTemplate="header">
@@ -20,9 +20,9 @@
     <p-chips
       class="w-full"
       [(ngModel)]="taskItems"
-      [autofocus]="true"
       [disabled]="taskItems.length === 1"
       (onFocus)="removeChipsInput($event)"
+      autofocus
       styleClass="w-full"
     >
       <ng-template let-item pTemplate="item">
@@ -39,8 +39,8 @@
       severity="primary"
     />
     <p-button
-      [outlined]="true"
       (onClick)="chosenExportItems(ExportType.CSV)"
+      outlined
       badge="{,}"
       label="CSV"
       severity="secondary"
@@ -84,9 +84,9 @@
   [(contextMenuSelection)]="contextItem"
   [(selection)]="selectedItems"
   [contextMenu]="context"
-  [scrollable]="true"
   [sortOrder]="1"
   [value]="items"
+  scrollable
   dataKey="name"
   scrollHeight="flex"
   sortField="name"
@@ -97,10 +97,10 @@
       <ng-template pTemplate="left">
         <div class="container">
           <p-fileUpload
-            [auto]="true"
             [chooseIcon]="PrimeIcons.DOWNLOAD"
-            [customUpload]="true"
             (uploadHandler)="handleImportItems($event)"
+            auto
+            customUpload
             accept=".csv,.json"
             chooseLabel="Import"
             mode="basic"
@@ -173,8 +173,8 @@
           </p-inputGroup>
           <p-button
             [icon]="PrimeIcons.FILTER_SLASH"
-            [outlined]="true"
             (onClick)="resetTable()"
+            outlined
             label="Clear"
           />
         </div>
@@ -209,7 +209,7 @@
         <p-tableCheckbox [value]="item" />
       </td>
       <td pFrozenColumn>
-        <p-button [label]="item.name" [link]="true" [routerLink]="item.name" styleClass="py-0" />
+        <p-button [label]="item.name" [routerLink]="item.name" link styleClass="py-0" />
       </td>
       <td>
         {{ item.length | number }}

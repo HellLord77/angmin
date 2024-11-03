@@ -1,8 +1,8 @@
 <p-dialog
   [closable]="false"
   [draggable]="false"
-  [modal]="true"
   [visible]="error() !== undefined"
+  modal
   contentStyleClass="w-30rem"
 >
   <ng-template pTemplate="header">
@@ -17,7 +17,7 @@
     <div class="container flex-column">
       <app-page-info [server]="server()" [item]="item()" [datum]="datum()" />
       <div></div>
-      <p-panel [collapsed]="true" [toggleable]="true">
+      <p-panel collapsed toggleable>
         <ng-template pTemplate="header">
           <app-icon-label class="p-panel-title" [icon]="PrimeIcons.CODE" label="Error details" />
         </ng-template>

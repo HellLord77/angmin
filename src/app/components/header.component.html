@@ -35,9 +35,9 @@
       />
       <p-button
         [icon]="PrimeIcons.TIMES_CIRCLE"
-        [outlined]="true"
         [disabled]="notificationService.notifications.length === 0"
         (onClick)="notificationService.notifications = []"
+        outlined
         label="Clear"
       />
     </div>
