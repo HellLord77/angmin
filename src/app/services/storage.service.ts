@@ -8,7 +8,7 @@ import {Server} from '../models/server.model';
   providedIn: 'root',
 })
 export class StorageService {
-  #scale = -2;
+  #scale = -1;
   #theme: Theme = Theme.Dark;
   #notify = true;
   #servers = new Map<string, Server>().set('localHost', {

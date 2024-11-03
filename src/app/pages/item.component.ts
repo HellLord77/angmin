@@ -3,8 +3,14 @@ import {Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {pluralize} from 'inflection';
-import {ConfirmationService, MenuItem, PrimeIcons} from 'primeng/api';
-import {BadgeModule} from 'primeng/badge';
+import {
+  ConfirmationService,
+  FilterMatchMode,
+  FilterMetadata,
+  MenuItem,
+  PrimeIcons,
+  SelectItem,
+} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {CheckboxModule} from 'primeng/checkbox';
 import {ChipsModule} from 'primeng/chips';
@@ -17,6 +23,7 @@ import {MultiSelectModule} from 'primeng/multiselect';
 import {PanelModule} from 'primeng/panel';
 import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
+import {TagModule} from 'primeng/tag';
 import {ToolbarModule} from 'primeng/toolbar';
 import {concatMap, from, NEVER, Observable} from 'rxjs';
 
@@ -44,7 +51,6 @@ import {NotificationService} from '../services/notification.service';
     ButtonModule,
     DialogModule,
     RouterLink,
-    BadgeModule,
     DatePipe,
     FileUploadModule,
     SplitButtonModule,
@@ -68,6 +74,7 @@ import {NotificationService} from '../services/notification.service';
     TypePipe,
     CheckboxModule,
     StringPipe,
+    TagModule,
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
@@ -84,6 +91,11 @@ export class ItemComponent implements OnDestroy {
   angminService = inject(AngminService);
 
   table = viewChild.required(Table);
+
+  stringMatchModeOptions: SelectItem[] = [
+    {label: 'Equals', value: FilterMatchMode.EQUALS},
+    {label: 'Not equals', value: FilterMatchMode.NOT_EQUALS},
+  ];
 
   contextMenu: MenuItem[] = [
     {
@@ -108,14 +120,14 @@ export class ItemComponent implements OnDestroy {
     {
       label: 'Export all',
       icon: PrimeIcons.UPLOAD,
-      command: () => this.chooseExportData(ActionType.Global),
+      command: () => this.chooseExportData(ActionType.All),
     },
   ];
   deleteMenu: MenuItem[] = [
     {
       label: 'Delete all',
       icon: PrimeIcons.TRASH,
-      command: () => this.confirmDeleteData(ActionType.Global),
+      command: () => this.confirmDeleteData(ActionType.All),
     },
   ];
 
@@ -147,6 +159,7 @@ export class ItemComponent implements OnDestroy {
   readonly clonedData = new Map<string, Datum>();
   contextDatum!: Datum;
 
+  protected readonly FilterMatchMode = FilterMatchMode;
   protected readonly PrimeIcons = PrimeIcons;
   protected readonly ColumnType = Type;
   protected readonly ActionType = ActionType;
@@ -172,6 +185,7 @@ export class ItemComponent implements OnDestroy {
         1 + table.first! / table.rows!,
         table.rows!,
         table.multiSortMeta ?? [],
+        table.filters as Record<string, FilterMetadata[]>,
       )
       .subscribe({
         next: (paginatedData) => {
@@ -217,7 +231,7 @@ export class ItemComponent implements OnDestroy {
   chooseExportData(type: ActionType) {
     if (type === ActionType.Context) {
       this.taskData = [this.contextDatum];
-    } else if (type === ActionType.Selection) {
+    } else if (type === ActionType.Select) {
       this.taskData = this.selectedData;
     } else {
       this.taskData = [];
@@ -234,7 +248,7 @@ export class ItemComponent implements OnDestroy {
   confirmDeleteData(type: ActionType) {
     if (type === ActionType.Context) {
       this.taskData = [this.contextDatum];
-    } else if (type === ActionType.Selection) {
+    } else if (type === ActionType.Select) {
       this.taskData = this.selectedData;
     } else {
       this.taskData = [];
@@ -362,4 +376,6 @@ export class ItemComponent implements OnDestroy {
     const inputElement = event.target as HTMLInputElement;
     inputElement.remove();
   }
+
+  protected readonly Type = Type;
 }

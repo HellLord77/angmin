@@ -1,0 +1,4 @@
+p-tag::ng-deep .p-tag-value {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

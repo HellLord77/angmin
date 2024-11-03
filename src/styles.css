@@ -9,8 +9,8 @@ th {
 td {
   max-width: 25em;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .text-danger {

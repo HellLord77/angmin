@@ -19,5 +19,7 @@ export class AppComponent {
 
   constructor() {
     this.primeNGConfig.ripple = true;
+    this.primeNGConfig.filterMatchModeOptions['text'] =
+      this.primeNGConfig.filterMatchModeOptions['numeric'];
   }
 }

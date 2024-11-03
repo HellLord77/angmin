@@ -57,18 +57,12 @@
     <div class="flex align-items-center">
       <p-buttonGroup class="w-full">
         <p-button [disabled]="scale === -2" [icon]="PrimeIcons.MINUS" (onClick)="decreaseScale()" />
-        <p-button [disabled]="true" [label]="scale.toString()" />
+        <p-button [label]="scale.toString()" disabled />
         <p-button [disabled]="scale === 2" [icon]="PrimeIcons.PLUS" (onClick)="increaseScale()" />
       </p-buttonGroup>
       <p-divider layout="vertical" />
       <p-inputGroup>
-        <button
-          class="py-2"
-          [disabled]="true"
-          [icon]="PrimeIcons.SUN"
-          pButton
-          type="button"
-        ></button>
+        <button class="py-2" [icon]="PrimeIcons.SUN" disabled pButton type="button"></button>
         <p-inputGroupAddon class="py-2">
           <p-inputSwitch
             [(ngModel)]="theme"
@@ -77,13 +71,7 @@
             (onChange)="updateTheme()"
           />
         </p-inputGroupAddon>
-        <button
-          class="py-2"
-          [disabled]="true"
-          [icon]="PrimeIcons.MOON"
-          pButton
-          type="button"
-        ></button>
+        <button class="py-2" [icon]="PrimeIcons.MOON" disabled pButton type="button"></button>
       </p-inputGroup>
       <p-divider layout="vertical" />
       <p-button [icon]="PrimeIcons.BARS" (onClick)="sidebarVisible = true" />

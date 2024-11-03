@@ -1,8 +1,9 @@
 import '@codemirror/lang-json';
 
 import {CodeEditor} from '@acrodata/code-editor';
-import {AfterViewInit, Component, inject, input, OnDestroy, OnInit, viewChild} from '@angular/core';
+import {AfterViewInit, Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
 import {json, jsonParseLinter} from '@codemirror/lang-json';
 import {linter, lintGutter} from '@codemirror/lint';
 import {Extension} from '@codemirror/state';
@@ -65,11 +66,13 @@ import {VisualService} from '../services/visual.service';
   host: {class: 'h-full block'},
   providers: [ConfirmationService, TypePipe],
 })
-export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DatumComponent implements AfterViewInit, OnDestroy {
   server = input.required<string>();
   item = input.required<string>();
   datum = input.required<string>();
 
+  activatedRoute = inject(ActivatedRoute);
+  router = inject(Router);
   confirmationService = inject(ConfirmationService);
   typePipe = inject(TypePipe);
   visualService = inject(VisualService);
@@ -106,11 +109,8 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly PrimeIcons = PrimeIcons;
   protected readonly TaskType = TaskType;
 
-  ngOnInit() {
-    this.refreshValue();
-  }
-
   ngAfterViewInit() {
+    this.refreshValue();
     this.visualService.setCodeEditor(this.codeEditor());
   }
 
@@ -121,6 +121,8 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
 
   refreshValue() {
     this.lastError = undefined;
+
+    this.treeTableComponent().collapseAll();
 
     this.taskType = TaskType.Read;
     this.task = this.angminService.readValue$(this.server(), this.item(), this.datum()).subscribe({
@@ -146,6 +148,44 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
     this.notificationService.showCompleted(TaskType.Read, true, `Value #: ${this.json.length}`);
   }
 
+  confirmDeleteValue() {
+    this.confirmationService.confirm({
+      key: 'delete',
+      icon: PrimeIcons.TRASH,
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => this.acceptDeleteValue(),
+      reject: () => this.rejectDeleteValue(),
+    });
+  }
+
+  acceptDeleteValue() {
+    this.taskType = TaskType.Delete;
+    this.task = this.angminService
+      .deleteValue$(this.server(), this.item(), this.datum())
+      .subscribe({
+        error: (error) => {
+          this.lastError = error;
+        },
+        complete: () => this.completeDeleteData(),
+      });
+  }
+
+  rejectDeleteValue() {
+    this.notificationService.showCancelled(TaskType.Delete, false);
+  }
+
+  cancelDeleteValue() {
+    this.task.unsubscribe();
+    this.notificationService.showCancelled(TaskType.Delete, true);
+  }
+
+  completeDeleteData() {
+    this.router.navigate(['../'], {relativeTo: this.activatedRoute}).then();
+    this.notificationService.showCompleted(TaskType.Delete, true);
+  }
+
   confirmSaveValue() {
     this.confirmationService.confirm({
       key: 'update',
@@ -159,7 +199,10 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   acceptSaveValue() {
-    const value = this.editorHidden ? this.getValue() : JSON.parse(this.json);
+    const value = this.editorHidden
+      ? (this.getTableValue() as unknown as Datum)
+      : this.getEditorValue();
+    this.json = JSON.stringify(value, null, 2);
 
     this.taskType = TaskType.Update;
     this.task = this.angminService.updateValue$(this.server(), this.item(), value).subscribe({
@@ -183,6 +226,25 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
     this.notificationService.showCompleted(TaskType.Update, true);
   }
 
+  getTableValue(columns = this.columns) {
+    const obj: Record<string, unknown> = {};
+    for (const column of columns) {
+      if (column.columns) {
+        const value = this.getTableValue(column.columns);
+        obj[column.name] = column.type === Type.Array ? Object.values(value) : value;
+      } else {
+        obj[column.name] = column.value;
+      }
+    }
+    return obj;
+  }
+
+  getEditorValue() {
+    const value: Datum = JSON.parse(this.json);
+    value.id = this.datum();
+    return value;
+  }
+
   getColumns(obj: object = this.value) {
     const entries: [string, object][] = Array.isArray(obj)
       ? obj.map((value, index) => [index.toString(), value])
@@ -197,29 +259,21 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  getValue(columns = this.columns) {
-    const obj: Record<string, unknown> = {};
-    for (const column of columns) {
-      if (column.columns) {
-        const value = this.getValue(column.columns);
-        obj[column.name] = column.type === Type.Array ? Object.values(value) : value;
-      } else {
-        obj[column.name] = column.value;
-      }
-    }
-    return obj;
-  }
-
   tabChange() {
     if (this.editorHidden) {
-      this.columns = this.getColumns(JSON.parse(this.json));
+      this.columns = this.getColumns(this.getEditorValue());
     } else {
-      this.json = JSON.stringify(this.getValue(), null, 2);
+      this.json = JSON.stringify(this.getTableValue(), null, 2);
     }
   }
 
   clearTable() {
-    this.columns = [];
+    for (const column of this.columns) {
+      if (column.name === 'id') {
+        this.columns = [column];
+        break;
+      }
+    }
   }
 
   validateEditor() {
@@ -229,6 +283,10 @@ export class DatumComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch {
       this.editorInvalid = true;
     }
+  }
+
+  clearEditor() {
+    this.json = '{}';
   }
 
   formatEditor() {

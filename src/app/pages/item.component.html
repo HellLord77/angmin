@@ -135,7 +135,7 @@
             [buttonDisabled]="!selectedData.length"
             [icon]="PrimeIcons.UPLOAD"
             [model]="exportMenu"
-            (onClick)="chooseExportData(ActionType.Selection)"
+            (onClick)="chooseExportData(ActionType.Select)"
             label="Export"
             severity="help"
           />
@@ -152,21 +152,16 @@
 
       <ng-template pTemplate="right">
         <div class="container">
-          <p-button [disabled]="true" [icon]="PrimeIcons.PLUS" label="Add" severity="success" />
+          <p-button [icon]="PrimeIcons.PLUS" disabled label="Add" severity="success" />
           <p-splitButton
             [buttonDisabled]="!selectedData.length"
             [icon]="PrimeIcons.TRASH"
             [model]="deleteMenu"
-            (onClick)="confirmDeleteData(ActionType.Selection)"
+            (onClick)="confirmDeleteData(ActionType.Select)"
             label="Delete"
             severity="danger"
           />
-          <p-splitButton
-            [disabled]="true"
-            [icon]="PrimeIcons.CLONE"
-            label="Clone"
-            severity="info"
-          />
+          <p-splitButton [icon]="PrimeIcons.CLONE" disabled label="Clone" severity="info" />
         </div>
       </ng-template>
     </p-toolbar>
@@ -207,15 +202,38 @@
         <p-tableHeaderCheckbox />
       </th>
       <th pFrozenColumn pSortableColumn="id">
-        <app-icon-table-header [icon]="PrimeIcons.FILE" label="id" sortField="id" />
+        <div class="container align-items-center">
+          <app-icon-table-header [icon]="PrimeIcons.FILE" label="id" sortField="id" />
+          <p-columnFilter
+            [showOperator]="false"
+            [showAddButton]="false"
+            [matchMode]="FilterMatchMode.EQUALS"
+            [matchModeOptions]="stringMatchModeOptions"
+            placeholder="Search id..."
+            field="id"
+            display="menu"
+          />
+        </div>
       </th>
       @for (column of columns; track column) {
         <th [pSortableColumn]="column">
-          <app-icon-table-header
-            [icon]="foreignColumns.has(column) ? PrimeIcons.KEY : PrimeIcons.LIST"
-            [label]="column"
-            [sortField]="column"
-          />
+          <div class="container align-items-center">
+            <app-icon-table-header
+              class="w-min"
+              [icon]="foreignColumns.has(column) ? PrimeIcons.KEY : PrimeIcons.LIST"
+              [label]="column"
+              [sortField]="column"
+            />
+            <p-columnFilter
+              [field]="column"
+              [matchMode]="FilterMatchMode.EQUALS"
+              [matchModeOptions]="foreignColumns.has(column) ? stringMatchModeOptions : undefined"
+              [showOperator]="false"
+              [showAddButton]="false"
+              placeholder="Search {{ column }}..."
+              display="menu"
+            />
+          </div>
         </th>
       }
       <th alignFrozen="right" pFrozenColumn>
@@ -238,9 +256,11 @@
             <ng-template pTemplate="input">
               <div class="flex flex-column align-items-center">
                 @switch (datum[column] | type) {
-                  @case (ColumnType.Undefined) {}
+                  @case (ColumnType.Undefined) {
+                    <input class="min-w-full" ngModel="undefined" disabled pInputText type="text" />
+                  }
                   @case (ColumnType.Null) {
-                    <p-checkbox [disabled]="true" />
+                    <input class="min-w-full" ngModel="null" disabled pInputText type="text" />
                   }
                   @case (ColumnType.Boolean) {
                     <p-inputSwitch [(ngModel)]="datum[column]" />
@@ -270,7 +290,7 @@
                     <input
                       class="min-w-full"
                       [ngModel]="datum[column] | string"
-                      [disabled]="true"
+                      disabled
                       pInputText
                       type="text"
                     />
@@ -280,14 +300,53 @@
             </ng-template>
 
             <ng-template pTemplate="output">
-              @if (foreignColumns.has(column)) {
-                <p-button
-                  [label]="datum[column]"
-                  [link]="true"
-                  [routerLink]="['../', foreignColumns.get(column), datum[column]]"
-                />
-              } @else {
-                {{ datum[column] | string }}
+              @switch (datum[column] | type) {
+                @case (Type.Undefined) {
+                  <p-tag
+                    [icon]="PrimeIcons.QUESTION_CIRCLE"
+                    value="undefined"
+                    severity="secondary"
+                  />
+                }
+                @case (Type.Null) {
+                  <p-tag [icon]="PrimeIcons.BAN" value="null" severity="warning" />
+                }
+                @case (Type.Boolean) {
+                  @if (datum[column]) {
+                    <p-tag [icon]="PrimeIcons.CHECK_CIRCLE" value="true" severity="success" />
+                  } @else {
+                    <p-tag [icon]="PrimeIcons.TIMES_CIRCLE" value="false" severity="danger" />
+                  }
+                }
+                @case (Type.Array) {
+                  <p-tag
+                    class="w-full max-w-min block"
+                    [icon]="PrimeIcons.MINUS_CIRCLE"
+                    [value]="datum[column] | string"
+                    severity="info"
+                    styleClass="w-full"
+                  />
+                }
+                @case (Type.Object) {
+                  <p-tag
+                    class="w-full max-w-min block"
+                    [icon]="PrimeIcons.PLUS_CIRCLE"
+                    [value]="datum[column] | string"
+                    severity="info"
+                    styleClass="w-full"
+                  />
+                }
+                @default {
+                  @if (foreignColumns.has(column)) {
+                    <p-button
+                      [label]="datum[column]"
+                      [link]="true"
+                      [routerLink]="['../', foreignColumns.get(column), datum[column]]"
+                    />
+                  } @else {
+                    {{ datum[column] | string }}
+                  }
+                }
               }
             </ng-template>
           </p-cellEditor>
@@ -301,12 +360,14 @@
               (onClick)="saveEditDatum(datum)"
               pSaveEditableRow
               severity="success"
+              rounded
             />
             <p-button
               [icon]="PrimeIcons.TIMES"
               (onClick)="cancelEditDatum(datum)"
               pCancelEditableRow
               severity="danger"
+              rounded
             />
           } @else {
             <p-button
@@ -314,6 +375,7 @@
               (onClick)="initEditDatum(datum)"
               pInitEditableRow
               severity="warning"
+              rounded
             />
           }
         </div>

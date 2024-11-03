@@ -8,11 +8,30 @@
 
 <app-confirm-dialog
   [items]="[value]"
+  [headerIcon]="PrimeIcons.TIMES_CIRCLE"
+  [itemIcon]="PrimeIcons.FILE"
+  key="delete"
+  headerLabel="Confirm document delete"
+  itemField="id"
+/>
+
+<app-confirm-dialog
+  [items]="[value]"
   [headerIcon]="PrimeIcons.CHECK_CIRCLE"
   [itemIcon]="PrimeIcons.FILE"
   key="update"
   headerLabel="Confirm document save"
   itemField="id"
+/>
+
+<app-progress-dialog
+  [item]="item()"
+  [server]="server()"
+  [datum]="datum()"
+  [progressIcon]="PrimeIcons.TRASH"
+  [visible]="!task.closed && taskType === TaskType.Delete"
+  (onCancel)="cancelDeleteValue()"
+  headerLabel="Deleting document..."
 />
 
 <app-progress-dialog
@@ -27,6 +46,7 @@
 />
 
 <app-progress-dialog
+  [datum]="datum()"
   [item]="item()"
   [server]="server()"
   [visible]="!task.closed && taskType === TaskType.Update"
@@ -39,11 +59,17 @@
     <div class="flex flex-column w-full">
       <p-toolbar styleClass="border-noround-bottom">
         <ng-template pTemplate="left">
-          <app-page-control
-            [lastRefresh]="lastRefresh"
-            [refreshOutlined]="true"
-            (onRefresh)="refreshValue()"
-          />
+          <div class="container">
+            <p-fileUpload
+              [auto]="true"
+              [chooseIcon]="PrimeIcons.DOWNLOAD"
+              [customUpload]="true"
+              accept=".csv,.json"
+              chooseLabel="Import"
+              mode="basic"
+            />
+            <p-button [icon]="PrimeIcons.UPLOAD" disabled label="Export" severity="help" />
+          </div>
         </ng-template>
 
         <ng-template pTemplate="center">
@@ -59,7 +85,7 @@
           <div class="container">
             <p-button
               [icon]="PrimeIcons.TRASH"
-              [disabled]="true"
+              (onClick)="confirmDeleteValue()"
               label="Delete"
               severity="danger"
             />
@@ -76,18 +102,11 @@
 
       <p-toolbar styleClass="border-noround-top">
         <ng-template pTemplate="start">
-          <div class="container">
-            <p-fileUpload
-              [auto]="true"
-              [chooseIcon]="PrimeIcons.DOWNLOAD"
-              [customUpload]="true"
-              [disabled]="true"
-              accept=".csv,.json"
-              chooseLabel="Import"
-              mode="basic"
-            />
-            <p-button [icon]="PrimeIcons.UPLOAD" [disabled]="true" label="Export" severity="help" />
-          </div>
+          <app-page-control
+            [lastRefresh]="lastRefresh"
+            [refreshOutlined]="true"
+            (onRefresh)="refreshValue()"
+          />
         </ng-template>
 
         <ng-template pTemplate="end">
@@ -125,12 +144,15 @@
         </ng-template>
 
         <ng-template pTemplate="end">
-          <p-button
-            [icon]="PrimeIcons.TRASH"
-            (onClick)="clearTable()"
-            label="Clear"
-            severity="danger"
-          />
+          <div class="container">
+            <p-button [icon]="PrimeIcons.COPY" label="Clone" severity="info" disabled />
+            <p-button
+              [icon]="PrimeIcons.ERASER"
+              (onClick)="clearTable()"
+              label="Clear"
+              severity="danger"
+            />
+          </div>
         </ng-template>
       </p-toolbar>
       <app-tree-table class="flex-content" [columns]="columns" />
@@ -171,6 +193,12 @@
               (onClick)="formatEditor()"
               label="Format"
               severity="help"
+            />
+            <p-button
+              [icon]="PrimeIcons.ERASER"
+              (onClick)="clearEditor()"
+              label="Clear"
+              severity="danger"
             />
           </div>
         </ng-template>

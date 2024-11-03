@@ -3,6 +3,7 @@
   [key]="key()"
   rejectButtonStyleClass="p-button-outlined"
   styleClass="w-6"
+  appendTo="body"
 >
   <ng-template pTemplate="header">
     <app-icon-label [icon]="headerIcon()" [label]="headerLabel()" deepClass="p-dialog-title" />
@@ -12,6 +13,7 @@
     <div class="container w-full">
       <p-chips
         class="w-full px-4"
+        [hidden]="items().length === 0"
         [autofocus]="true"
         [disabled]="items().length === 1"
         [ngModel]="items()"

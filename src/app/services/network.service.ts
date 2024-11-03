@@ -39,11 +39,19 @@ export class NetworkService {
     return this.httpClient.get<Datum[]>(this.#getUrl(server, [name]), {params});
   }
 
-  getItemPaginated$(server: Server, name: string, page: number, per_page: number, sort: string) {
+  getItemPaginated$(
+    server: Server,
+    name: string,
+    page: number,
+    per_page: number,
+    sort: string,
+    conditions: Record<string, string>,
+  ) {
     const params = new HttpParams()
       .set('_page', page.toString())
       .set('_per_page', per_page.toString())
-      .set('_sort', sort);
+      .set('_sort', sort)
+      .appendAll(conditions);
     return this.httpClient.get<PaginatedData>(this.#getUrl(server, [name]), {params});
   }
 

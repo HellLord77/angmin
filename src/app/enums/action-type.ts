@@ -1,5 +1,6 @@
 export enum ActionType {
   Context,
-  Selection,
-  Global,
+  Select,
+  Filter, // TODO
+  All,
 }

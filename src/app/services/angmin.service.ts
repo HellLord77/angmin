@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {SortMeta} from 'primeng/api';
+import {FilterMatchMode, FilterMetadata, SortMeta} from 'primeng/api';
 import {catchError, concatMap, from, map, Observable, Subscriber, timer} from 'rxjs';
 
 import {UndefinedAlias} from '../errors/undefined-alias.error';
@@ -118,15 +118,37 @@ export class AngminService {
     page: number,
     per_page: number,
     sortMetas: SortMeta[],
+    filters: Record<string, FilterMetadata[]>,
   ) {
     const sort = sortMetas
       .map((sortMeta) => `${sortMeta.order === 1 ? '' : '-'}${sortMeta.field}`)
       .toString();
+    console.log(filters);
+    const conditions: Record<string, string> = {};
+    Object.entries(filters).forEach(([field, filterMetadata]) => {
+      const value = filterMetadata[0].value;
+      if (value) {
+        const filterMatchMode = filterMetadata[0].matchMode!;
+        if (filterMatchMode === FilterMatchMode.NOT_EQUALS) {
+          field = `${field}_ne`;
+        } else if (filterMatchMode === FilterMatchMode.LESS_THAN) {
+          field = `${field}_lt`;
+        } else if (filterMatchMode === FilterMatchMode.LESS_THAN_OR_EQUAL_TO) {
+          field = `${field}_lte`;
+        } else if (filterMatchMode === FilterMatchMode.GREATER_THAN) {
+          field = `${field}_gt`;
+        } else if (filterMatchMode === FilterMatchMode.GREATER_THAN_OR_EQUAL_TO) {
+          field = `${field}_gte`;
+        }
+        conditions[field] = filterMetadata[0].value;
+      }
+    });
+    console.log(conditions);
 
     return this.#delayError(
       this.getServer$(alias).pipe(
         concatMap((server) =>
-          this.networkService.getItemPaginated$(server, name, page, per_page, sort),
+          this.networkService.getItemPaginated$(server, name, page, per_page, sort, conditions),
         ),
       ),
     );
@@ -180,7 +202,7 @@ export class AngminService {
     per_page: number,
     datumMapper: DatumMapper,
   ) {
-    return this.readPaginatedData$(alias, name, page, per_page, []).pipe(
+    return this.readPaginatedData$(alias, name, page, per_page, [], {}).pipe(
       concatMap((paginatedData) =>
         this.mapData$(
           alias,
@@ -205,7 +227,7 @@ export class AngminService {
   }
 
   mapItemData$(alias: string, name: string, datumMapper: DatumMapper) {
-    return this.readPaginatedData$(alias, name, 1, 100, []).pipe(
+    return this.readPaginatedData$(alias, name, 1, 100, [], {}).pipe(
       concatMap((paginatedData) =>
         this.mapPagesData$(
           alias,

@@ -1,5 +1,13 @@
 import {DatePipe, DecimalPipe, PercentPipe} from '@angular/common';
-import {Component, ElementRef, inject, input, OnDestroy, OnInit, viewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  viewChild,
+} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {ConfirmationService, MenuItem, PrimeIcons} from 'primeng/api';
@@ -68,7 +76,7 @@ import {NotificationService} from '../services/notification.service';
   styleUrl: './server.component.css',
   providers: [ConfirmationService],
 })
-export class ServerComponent implements OnInit, OnDestroy {
+export class ServerComponent implements AfterViewInit, OnDestroy {
   server = input.required<string>();
 
   activatedRoute = inject(ActivatedRoute);
@@ -103,14 +111,14 @@ export class ServerComponent implements OnInit, OnDestroy {
     {
       label: 'Export all',
       icon: PrimeIcons.UPLOAD,
-      command: () => this.chooseExportItems(ActionType.Global),
+      command: () => this.chooseExportItems(ActionType.All),
     },
   ];
   deleteMenu: MenuItem[] = [
     {
       label: 'Delete all',
       icon: PrimeIcons.TRASH,
-      command: () => this.confirmDeleteItems(ActionType.Global),
+      command: () => this.confirmDeleteItems(ActionType.All),
     },
   ];
 
@@ -137,7 +145,7 @@ export class ServerComponent implements OnInit, OnDestroy {
   protected readonly TaskType = TaskType;
   protected readonly ExportType = ExportType;
 
-  ngOnInit() {
+  ngAfterViewInit() {
     this.refreshItems();
   }
 
@@ -184,7 +192,7 @@ export class ServerComponent implements OnInit, OnDestroy {
   chooseExportItems(type: ActionType) {
     if (type === ActionType.Context) {
       this.taskItems = [this.contextItem];
-    } else if (type === ActionType.Selection) {
+    } else if (type === ActionType.Select) {
       this.taskItems = [...this.selectedItems];
     } else {
       this.taskItems = [...this.items];
@@ -201,7 +209,7 @@ export class ServerComponent implements OnInit, OnDestroy {
   confirmDeleteItems(type: ActionType) {
     if (type === ActionType.Context) {
       this.taskItems = [this.contextItem];
-    } else if (type === ActionType.Selection) {
+    } else if (type === ActionType.Select) {
       this.taskItems = [...this.selectedItems];
     } else {
       this.taskItems = [...this.items];

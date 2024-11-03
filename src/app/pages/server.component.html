@@ -109,7 +109,7 @@
             [buttonDisabled]="!selectedItems.length"
             [icon]="PrimeIcons.UPLOAD"
             [model]="exportMenu"
-            (onClick)="chooseExportItems(ActionType.Selection)"
+            (onClick)="chooseExportItems(ActionType.Select)"
             label="Export"
             severity="help"
           />
@@ -126,21 +126,16 @@
 
       <ng-template pTemplate="right">
         <div class="container">
-          <p-button [disabled]="true" [icon]="PrimeIcons.PLUS" label="Add" severity="success" />
+          <p-button [icon]="PrimeIcons.PLUS" disabled label="Add" severity="success" />
           <p-splitButton
             [buttonDisabled]="!selectedItems.length"
             [icon]="PrimeIcons.TRASH"
             [model]="deleteMenu"
-            (onClick)="confirmDeleteItems(ActionType.Selection)"
+            (onClick)="confirmDeleteItems(ActionType.Select)"
             label="Delete"
             severity="danger"
           />
-          <p-splitButton
-            [disabled]="true"
-            [icon]="PrimeIcons.CLONE"
-            label="Clone"
-            severity="info"
-          />
+          <p-splitButton [icon]="PrimeIcons.CLONE" disabled label="Clone" severity="info" />
         </div>
       </ng-template>
     </p-toolbar>

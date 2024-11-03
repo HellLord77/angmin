@@ -27,7 +27,7 @@
       <td class="w-1rem">
         <input
           [(ngModel)]="column.name"
-          [disabled]="isArray()"
+          [disabled]="isArray() || column.name === 'id'"
           (blur)="fixName(column)"
           (keydown.end)="$event.stopPropagation()"
           (keydown.home)="$event.stopPropagation()"
@@ -39,6 +39,7 @@
         <p-dropdown
           class="w-9rem block"
           [(ngModel)]="column.type"
+          [disabled]="column.name === 'id'"
           [options]="types"
           (onChange)="typeChanged(column)"
           styleClass="w-full"
@@ -49,88 +50,102 @@
       </td>
       <td>
         <div class="flex flex-column align-items-center">
-          @switch (column.type) {
-            @case (ColumnType.Null) {
-              <p-button
-                class="w-full"
-                [icon]="PrimeIcons.BAN"
-                severity="secondary"
-                label="Null"
-                styleClass="w-full"
-              />
-            }
-            @case (ColumnType.Boolean) {
-              <p-selectButton
-                class="w-full"
-                [(ngModel)]="column.value"
-                [options]="booleanOptions"
-                [allowEmpty]="false"
-                optionLabel="label"
-                optionValue="value"
-                styleClass="flex"
-              />
-            }
-            @case (ColumnType.Number) {
-              <p-inputNumber
-                class="min-w-full"
-                [(ngModel)]="column.value"
-                [allowEmpty]="false"
-                [maxFractionDigits]="20"
-                [showButtons]="true"
-                [useGrouping]="false"
-                (keydown.home)="$event.stopPropagation()"
-                (keydown.end)="$event.stopPropagation()"
-                styleClass="min-w-full"
-              />
-            }
-            @case (ColumnType.String) {
-              <p-inputGroup>
-                <input
+          @if (column.name === 'id') {
+            <p-inputGroup>
+              <input [ngModel]="column.value" disabled pInputText type="text" />
+            </p-inputGroup>
+          } @else {
+            @switch (column.type) {
+              @case (ColumnType.Null) {
+                <p-button
+                  class="w-full"
+                  [icon]="PrimeIcons.BAN"
+                  severity="warning"
+                  label="Null"
+                  styleClass="w-full"
+                />
+              }
+              @case (ColumnType.Boolean) {
+                <p-selectButton
+                  class="w-full"
                   [(ngModel)]="column.value"
+                  [options]="booleanOptions"
+                  [allowEmpty]="false"
+                  optionLabel="label"
+                  optionValue="value"
+                  styleClass="flex"
+                />
+              }
+              @case (ColumnType.Number) {
+                <p-inputNumber
+                  class="min-w-full"
+                  [(ngModel)]="column.value"
+                  [allowEmpty]="false"
+                  [maxFractionDigits]="20"
+                  [showButtons]="true"
+                  [useGrouping]="false"
                   (keydown.home)="$event.stopPropagation()"
                   (keydown.end)="$event.stopPropagation()"
-                  pInputText
-                  type="text"
+                  styleClass="min-w-full"
                 />
+              }
+              @case (ColumnType.String) {
+                <p-inputGroup>
+                  <input
+                    [(ngModel)]="column.value"
+                    (keydown.home)="$event.stopPropagation()"
+                    (keydown.end)="$event.stopPropagation()"
+                    pInputText
+                    type="text"
+                  />
 
-                <p-overlayPanel #dateOverlayPanel>
-                  <app-date-picker (datePick)="column.value = $event; dateOverlayPanel.hide()" />
-                </p-overlayPanel>
-                <button
-                  [icon]="PrimeIcons.CALENDAR"
-                  (click)="dateOverlayPanel.toggle($event)"
-                  pButton
-                  type="button"
-                ></button>
+                  <p-overlayPanel #dateOverlayPanel>
+                    <app-date-picker (datePick)="column.value = $event; dateOverlayPanel.hide()" />
+                  </p-overlayPanel>
+                  <button
+                    [icon]="PrimeIcons.CALENDAR"
+                    (click)="dateOverlayPanel.toggle($event)"
+                    pButton
+                    type="button"
+                  ></button>
 
-                <p-overlayPanel #colorOverlayPanel>
-                  <app-color-picker (colorPick)="column.value = $event; colorOverlayPanel.hide()" />
-                </p-overlayPanel>
-                <button
-                  [icon]="PrimeIcons.PALETTE"
-                  (click)="colorOverlayPanel.toggle($event)"
-                  pButton
-                  type="button"
-                ></button>
-              </p-inputGroup>
-            }
-            @default {
-              <p-button
-                class="w-full"
-                [icon]="expanded ? PrimeIcons.CHEVRON_DOWN : PrimeIcons.CHEVRON_RIGHT"
-                [pRowToggler]="column"
-                severity="info"
-                styleClass="w-full"
-              />
+                  <p-overlayPanel #colorOverlayPanel>
+                    <app-color-picker
+                      (colorPick)="column.value = $event; colorOverlayPanel.hide()"
+                    />
+                  </p-overlayPanel>
+                  <button
+                    [icon]="PrimeIcons.PALETTE"
+                    (click)="colorOverlayPanel.toggle($event)"
+                    pButton
+                    type="button"
+                  ></button>
+                </p-inputGroup>
+              }
+              @default {
+                <p-button
+                  class="w-full"
+                  [icon]="expanded ? PrimeIcons.CHEVRON_DOWN : PrimeIcons.CHEVRON_RIGHT"
+                  [pRowToggler]="column"
+                  severity="info"
+                  styleClass="w-full"
+                />
+              }
             }
           }
         </div>
       </td>
       <td class="w-1rem" alignFrozen="right" pFrozenColumn>
         <div class="container">
-          <p-button [icon]="PrimeIcons.PLUS" (onClick)="add(rowIndex)" severity="success" />
-          <p-button [icon]="PrimeIcons.MINUS" (onClick)="delete(rowIndex)" severity="danger" />
-          <p-button [icon]="PrimeIcons.CLONE" (onClick)="clone(rowIndex)" severity="info" />
+          <p-button [icon]="PrimeIcons.PLUS" (onClick)="add(rowIndex)" severity="success" rounded />
+          <p-button
+            [icon]="PrimeIcons.MINUS"
+            [disabled]="column.name === 'id'"
+            (onClick)="delete(rowIndex)"
+            severity="danger"
+            rounded
+          />
+          <p-button [icon]="PrimeIcons.CLONE" (onClick)="clone(rowIndex)" severity="info" rounded />
         </div>
       </td>
     </tr>
