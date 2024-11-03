@@ -91,6 +91,17 @@ export class AngminService {
     return items;
   }
 
+  createData$(alias: string, name: string, datum: Datum) {
+    const partialDatum: Partial<Datum> = {...datum};
+    delete partialDatum.id;
+
+    return this.#delayError(
+      this.getServer$(alias).pipe(
+        concatMap((server) => this.networkService.postItem$(server, name, partialDatum)),
+      ),
+    );
+  }
+
   readItems$(alias: string) {
     return this.#delayError(
       this.getServer$(alias).pipe(
@@ -123,7 +134,6 @@ export class AngminService {
     const sort = sortMetas
       .map((sortMeta) => `${sortMeta.order === 1 ? '' : '-'}${sortMeta.field}`)
       .toString();
-    console.log(filters);
     const conditions: Record<string, string> = {};
     Object.entries(filters).forEach(([field, filterMetadata]) => {
       const value = filterMetadata[0].value;

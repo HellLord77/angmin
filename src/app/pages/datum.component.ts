@@ -29,6 +29,7 @@ import {ProgressDialogComponent} from '../components/progress-dialog.component';
 import {TreeTableComponent} from '../components/tree-table.component';
 import {TaskType} from '../enums/task-type';
 import {Type} from '../enums/type';
+import {columnsToValue} from '../functions/columnsToValue';
 import {Column} from '../models/column.model';
 import {Datum} from '../models/datum.model';
 import {EditorSetup} from '../models/editor-setup.model';
@@ -71,10 +72,10 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
   item = input.required<string>();
   datum = input.required<string>();
 
+  typePipe = inject(TypePipe);
   activatedRoute = inject(ActivatedRoute);
   router = inject(Router);
   confirmationService = inject(ConfirmationService);
-  typePipe = inject(TypePipe);
   visualService = inject(VisualService);
   notificationService = inject(NotificationService);
   angminService = inject(AngminService);
@@ -226,17 +227,8 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
     this.notificationService.showCompleted(TaskType.Update, true);
   }
 
-  getTableValue(columns = this.columns) {
-    const obj: Record<string, unknown> = {};
-    for (const column of columns) {
-      if (column.columns) {
-        const value = this.getTableValue(column.columns);
-        obj[column.name] = column.type === Type.Array ? Object.values(value) : value;
-      } else {
-        obj[column.name] = column.value;
-      }
-    }
-    return obj;
+  getTableValue() {
+    return columnsToValue(this.columns);
   }
 
   getEditorValue() {

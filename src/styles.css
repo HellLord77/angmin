@@ -13,6 +13,10 @@ td {
   overflow: hidden;
 }
 
+.h-9 {
+  height: 75%;
+}
+
 .text-danger {
   color: var(--red-500);
 }

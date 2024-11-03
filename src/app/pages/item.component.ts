@@ -33,10 +33,13 @@ import {IconLabelComponent} from '../components/icon-label.component';
 import {IconTableHeaderComponent} from '../components/icon-table-header.component';
 import {PageControlComponent} from '../components/page-control.component';
 import {ProgressDialogComponent} from '../components/progress-dialog.component';
+import {TreeTableComponent} from '../components/tree-table.component';
 import {ActionType} from '../enums/action-type';
 import {ExportType} from '../enums/export-type';
 import {TaskType} from '../enums/task-type';
 import {Type} from '../enums/type';
+import {columnsToValue} from '../functions/columnsToValue';
+import {Column} from '../models/column.model';
 import {Datum} from '../models/datum.model';
 import {PaginatedData} from '../models/paginated-data.model';
 import {StringPipe} from '../pipes/string.pipe';
@@ -75,6 +78,7 @@ import {NotificationService} from '../services/notification.service';
     CheckboxModule,
     StringPipe,
     TagModule,
+    TreeTableComponent,
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
@@ -132,6 +136,7 @@ export class ItemComponent implements OnDestroy {
   ];
 
   chooseExportVisible = false;
+  addDatumVisible = false;
   lastError?: Error;
   lastRefresh?: Date;
 
@@ -144,6 +149,7 @@ export class ItemComponent implements OnDestroy {
   columns: string[] = [];
   selectedColumns?: string[];
   foreignColumns = new Map<string, string>();
+  addDatumColumns: Column[] = [];
 
   paginatedData: PaginatedData = {
     first: 0,
@@ -243,6 +249,42 @@ export class ItemComponent implements OnDestroy {
   chosenExportData(type: ExportType) {
     this.chooseExportVisible = false;
     console.log(`Export data: .${type} ${JSON.stringify(this.taskData)}`);
+  }
+
+  initAddDatum() {
+    this.addDatumColumns = [{name: 'id', type: Type.String, value: '...'}];
+    this.addDatumVisible = true;
+  }
+
+  saveAddDatum() {
+    this.addDatumVisible = false;
+    const datum = columnsToValue(this.addDatumColumns) as unknown as Datum;
+
+    this.taskData = [datum];
+
+    this.taskMax = 1;
+    this.taskCurrent = 0;
+    this.taskDatum = datum.id;
+    this.taskType = TaskType.Create;
+    this.task = from(this.taskData)
+      .pipe(concatMap((datum) => this.angminService.createData$(this.server(), this.item(), datum)))
+      .subscribe({
+        next: () => ++this.taskCurrent,
+        error: (error) => {
+          this.lastError = error;
+        },
+        complete: () => this.completeSaveDatum(),
+      });
+  }
+
+  cancelSaveDatum() {
+    this.task.unsubscribe();
+    this.notificationService.showCancelled(TaskType.Create, true);
+  }
+
+  completeSaveDatum() {
+    this.refreshData();
+    this.notificationService.showCompleted(TaskType.Create, true);
   }
 
   confirmDeleteData(type: ActionType) {
@@ -357,15 +399,11 @@ export class ItemComponent implements OnDestroy {
 
   cancelEditData() {
     this.task.unsubscribe();
-    this.notificationService.showCancelled(
-      TaskType.Update,
-      true,
-      `Updated #: ${this.taskCurrent}/${this.taskMax}`,
-    );
+    this.notificationService.showCancelled(TaskType.Update, true);
   }
 
   completeEditData() {
-    this.notificationService.showCompleted(TaskType.Update, true, `Updated #: ${this.taskCurrent}`);
+    this.notificationService.showCompleted(TaskType.Update, true);
   }
 
   resetTable() {

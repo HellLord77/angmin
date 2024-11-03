@@ -57,6 +57,32 @@
   </ng-template>
 </p-dialog>
 
+<p-dialog
+  [(visible)]="addDatumVisible"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="w-10 h-9"
+  modal
+  maximizable
+  dismissableMask
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      [icon]="PrimeIcons.FILE_PLUS"
+      label="Add new document"
+      deepClass="p-dialog-title"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <app-tree-table [columns]="addDatumColumns" />
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button [icon]="PrimeIcons.SAVE" (onClick)="saveAddDatum()" label="Save" severity="success" />
+  </ng-template>
+</p-dialog>
+
 <app-confirm-dialog
   [(items)]="taskData"
   [headerIcon]="PrimeIcons.TIMES_CIRCLE"
@@ -74,6 +100,14 @@
   [visible]="!task.closed && taskType === TaskType.Read"
   (onCancel)="cancelRefreshData()"
   headerLabel="Loading documents..."
+/>
+
+<app-progress-dialog
+  [item]="item()"
+  [server]="server()"
+  [visible]="!task.closed && taskType === TaskType.Create"
+  (onCancel)="cancelSaveDatum()"
+  headerLabel="Saving document..."
 />
 
 <app-progress-dialog
@@ -152,7 +186,12 @@
 
       <ng-template pTemplate="right">
         <div class="container">
-          <p-button [icon]="PrimeIcons.PLUS" disabled label="Add" severity="success" />
+          <p-button
+            [icon]="PrimeIcons.PLUS"
+            (onClick)="initAddDatum()"
+            label="Add"
+            severity="success"
+          />
           <p-splitButton
             [buttonDisabled]="!selectedData.length"
             [icon]="PrimeIcons.TRASH"
