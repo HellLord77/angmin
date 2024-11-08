@@ -1,7 +1,6 @@
-import {DatePipe, DecimalPipe, JsonPipe} from '@angular/common';
 import {Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {pluralize} from 'inflection';
 import {
   ConfirmationService,
@@ -11,16 +10,14 @@ import {
   PrimeIcons,
   SelectItem,
 } from 'primeng/api';
-import {ButtonModule} from 'primeng/button';
-import {CheckboxModule} from 'primeng/checkbox';
-import {ChipsModule} from 'primeng/chips';
+import {Button} from 'primeng/button';
 import {ContextMenuModule} from 'primeng/contextmenu';
 import {DialogModule} from 'primeng/dialog';
 import {FileUploadHandlerEvent, FileUploadModule} from 'primeng/fileupload';
 import {InputNumberModule} from 'primeng/inputnumber';
 import {InputSwitchModule} from 'primeng/inputswitch';
+import {InputTextModule} from 'primeng/inputtext';
 import {MultiSelectModule} from 'primeng/multiselect';
-import {PanelModule} from 'primeng/panel';
 import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
 import {TagModule} from 'primeng/tag';
@@ -29,6 +26,7 @@ import {concatMap, from, NEVER, Observable} from 'rxjs';
 
 import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
 import {ErrorDialogComponent} from '../components/error-dialog.component';
+import {ExportDialogComponent} from '../components/export-dialog.component';
 import {IconLabelComponent} from '../components/icon-label.component';
 import {IconTableHeaderComponent} from '../components/icon-table-header.component';
 import {PageControlComponent} from '../components/page-control.component';
@@ -51,34 +49,29 @@ import {NotificationService} from '../services/notification.service';
   selector: 'app-item',
   standalone: true,
   imports: [
-    ButtonModule,
-    DialogModule,
-    RouterLink,
-    DatePipe,
-    FileUploadModule,
-    SplitButtonModule,
-    TableModule,
-    ToolbarModule,
-    ContextMenuModule,
-    MultiSelectModule,
-    FormsModule,
-    PanelModule,
-    ChipsModule,
-    IconLabelComponent,
-    IconTableHeaderComponent,
     ConfirmDialogComponent,
-    DecimalPipe,
     ProgressDialogComponent,
-    PageControlComponent,
+    ContextMenuModule,
+    TableModule,
+    ExportDialogComponent,
     ErrorDialogComponent,
+    DialogModule,
+    IconTableHeaderComponent,
+    Button,
     InputSwitchModule,
-    InputNumberModule,
-    JsonPipe,
-    TypePipe,
-    CheckboxModule,
-    StringPipe,
     TagModule,
+    StringPipe,
+    IconLabelComponent,
+    TypePipe,
+    InputNumberModule,
+    FormsModule,
+    ToolbarModule,
+    PageControlComponent,
+    MultiSelectModule,
+    SplitButtonModule,
+    FileUploadModule,
     TreeTableComponent,
+    InputTextModule,
   ],
   templateUrl: './item.component.html',
   styleUrl: './item.component.css',
@@ -135,7 +128,7 @@ export class ItemComponent implements OnDestroy {
     },
   ];
 
-  chooseExportVisible = false;
+  confirmExportVisible = false;
   addDatumVisible = false;
   lastError?: Error;
   lastRefresh?: Date;
@@ -167,10 +160,9 @@ export class ItemComponent implements OnDestroy {
 
   protected readonly FilterMatchMode = FilterMatchMode;
   protected readonly PrimeIcons = PrimeIcons;
-  protected readonly ColumnType = Type;
+  protected readonly Type = Type;
   protected readonly ActionType = ActionType;
   protected readonly TaskType = TaskType;
-  protected readonly ExportType = ExportType;
 
   ngOnDestroy() {
     this.task.unsubscribe();
@@ -243,11 +235,12 @@ export class ItemComponent implements OnDestroy {
       this.taskData = [];
     }
 
-    this.chooseExportVisible = true;
+    this.confirmExportVisible = true;
   }
 
-  chosenExportData(type: ExportType) {
-    this.chooseExportVisible = false;
+  confirmExportData(type: ExportType) {
+    this.confirmExportVisible = false;
+
     console.log(`Export data: .${type} ${JSON.stringify(this.taskData)}`);
   }
 
@@ -409,11 +402,4 @@ export class ItemComponent implements OnDestroy {
   resetTable() {
     this.table().reset();
   }
-
-  removeChipsInput(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    inputElement.remove();
-  }
-
-  protected readonly Type = Type;
 }

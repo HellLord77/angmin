@@ -1,4 +1,4 @@
-import {DatePipe, DecimalPipe, PercentPipe} from '@angular/common';
+import {DecimalPipe, PercentPipe} from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -8,21 +8,13 @@ import {
   OnDestroy,
   viewChild,
 } from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {ConfirmationService, MenuItem, PrimeIcons} from 'primeng/api';
-import {BadgeModule} from 'primeng/badge';
-import {ButtonModule} from 'primeng/button';
-import {ChipsModule} from 'primeng/chips';
 import {ContextMenuModule} from 'primeng/contextmenu';
-import {DialogModule} from 'primeng/dialog';
-import {DividerModule} from 'primeng/divider';
 import {FileUploadHandlerEvent, FileUploadModule} from 'primeng/fileupload';
 import {InputGroupModule} from 'primeng/inputgroup';
 import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
 import {InputTextModule} from 'primeng/inputtext';
-import {PanelModule} from 'primeng/panel';
-import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {SplitButtonModule} from 'primeng/splitbutton';
 import {Table, TableModule} from 'primeng/table';
 import {ToolbarModule} from 'primeng/toolbar';
@@ -30,6 +22,7 @@ import {NEVER} from 'rxjs';
 
 import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
 import {ErrorDialogComponent} from '../components/error-dialog.component';
+import {ExportDialogComponent} from '../components/export-dialog.component';
 import {IconLabelComponent} from '../components/icon-label.component';
 import {IconTableHeaderComponent} from '../components/icon-table-header.component';
 import {PageControlComponent} from '../components/page-control.component';
@@ -45,32 +38,23 @@ import {NotificationService} from '../services/notification.service';
   selector: 'app-server',
   standalone: true,
   imports: [
-    RouterLink,
-    DecimalPipe,
-    PercentPipe,
-    DatePipe,
+    ErrorDialogComponent,
+    ExportDialogComponent,
+    ConfirmDialogComponent,
+    ContextMenuModule,
+    ProgressDialogComponent,
     TableModule,
-    ButtonModule,
-    BadgeModule,
     ToolbarModule,
-    InputTextModule,
     FileUploadModule,
     SplitButtonModule,
+    IconLabelComponent,
+    PageControlComponent,
     InputGroupModule,
     InputGroupAddonModule,
-    DialogModule,
-    ContextMenuModule,
-    PanelModule,
-    DividerModule,
-    ChipsModule,
-    FormsModule,
-    ProgressSpinnerModule,
-    IconLabelComponent,
+    PercentPipe,
+    DecimalPipe,
     IconTableHeaderComponent,
-    ConfirmDialogComponent,
-    ProgressDialogComponent,
-    PageControlComponent,
-    ErrorDialogComponent,
+    InputTextModule,
   ],
   templateUrl: './server.component.html',
   styleUrl: './server.component.css',
@@ -122,7 +106,7 @@ export class ServerComponent implements AfterViewInit, OnDestroy {
     },
   ];
 
-  chooseExportVisible = false;
+  confirmExportVisible = false;
   lastError?: Error;
   lastRefresh?: Date;
 
@@ -143,7 +127,6 @@ export class ServerComponent implements AfterViewInit, OnDestroy {
   protected readonly PrimeIcons = PrimeIcons;
   protected readonly ActionType = ActionType;
   protected readonly TaskType = TaskType;
-  protected readonly ExportType = ExportType;
 
   ngAfterViewInit() {
     this.refreshItems();
@@ -198,11 +181,12 @@ export class ServerComponent implements AfterViewInit, OnDestroy {
       this.taskItems = [...this.items];
     }
 
-    this.chooseExportVisible = true;
+    this.confirmExportVisible = true;
   }
 
-  chosenExportItems(type: ExportType) {
-    this.chooseExportVisible = false;
+  confirmExportItems(type: ExportType) {
+    this.confirmExportVisible = false;
+
     console.log(`Export items: .${type} ${JSON.stringify(this.taskItems)}`);
   }
 
@@ -290,10 +274,5 @@ export class ServerComponent implements AfterViewInit, OnDestroy {
     table.sortField = 'name';
     table.sortOrder = 1;
     table.sortSingle();
-  }
-
-  removeChipsInput(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    inputElement.remove();
   }
 }

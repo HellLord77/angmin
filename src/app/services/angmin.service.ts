@@ -153,7 +153,6 @@ export class AngminService {
         conditions[field] = filterMetadata[0].value;
       }
     });
-    console.log(conditions);
 
     return this.#delayError(
       this.getServer$(alias).pipe(

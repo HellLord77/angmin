@@ -1,0 +1,50 @@
+<p-dialog
+  [visible]="visible()"
+  [draggable]="false"
+  [resizable]="false"
+  (visibleChange)="visibleChange.emit()"
+  dismissableMask
+  appendTo="body"
+  modal
+  styleClass="w-6"
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      [icon]="PrimeIcons.FILE_EXPORT"
+      [label]="headerLabel()"
+      deepClass="p-dialog-title"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <p-chips
+      class="w-full"
+      [ngModel]="items()"
+      [disabled]="items().length === 1"
+      (ngModelChange)="itemsChange.emit($event)"
+      (onFocus)="removeChipsInput($event)"
+      autofocus
+      styleClass="w-full"
+    >
+      <ng-template let-item pTemplate="item">
+        <app-icon-label [icon]="itemIcon()" [label]="item[itemField()]" />
+      </ng-template>
+    </p-chips>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      (onClick)="onConfirm.emit(ExportType.JSON)"
+      badge="{;}"
+      label="JSON"
+      severity="primary"
+    />
+    <p-button
+      (onClick)="onConfirm.emit(ExportType.CSV)"
+      outlined
+      badge="{,}"
+      label="CSV"
+      severity="secondary"
+    />
+  </ng-template>
+</p-dialog>

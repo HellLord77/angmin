@@ -12,10 +12,8 @@ import {jsonrepair} from 'jsonrepair';
 import {ConfirmationService, PrimeIcons} from 'primeng/api';
 import {Button} from 'primeng/button';
 import {FileUploadModule} from 'primeng/fileupload';
-import {InputTextModule} from 'primeng/inputtext';
 import {PanelModule} from 'primeng/panel';
 import {SelectButtonModule} from 'primeng/selectbutton';
-import {TableModule} from 'primeng/table';
 import {ToggleButtonModule} from 'primeng/togglebutton';
 import {ToolbarModule} from 'primeng/toolbar';
 import {NEVER} from 'rxjs';
@@ -23,7 +21,6 @@ import {NEVER} from 'rxjs';
 import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
 import {ErrorDialogComponent} from '../components/error-dialog.component';
 import {IconLabelComponent} from '../components/icon-label.component';
-import {IconTableHeaderComponent} from '../components/icon-table-header.component';
 import {PageControlComponent} from '../components/page-control.component';
 import {ProgressDialogComponent} from '../components/progress-dialog.component';
 import {TreeTableComponent} from '../components/tree-table.component';
@@ -33,7 +30,6 @@ import {columnsToValue} from '../functions/columnsToValue';
 import {Column} from '../models/column.model';
 import {Datum} from '../models/datum.model';
 import {EditorSetup} from '../models/editor-setup.model';
-import {StringPipe} from '../pipes/string.pipe';
 import {TypePipe} from '../pipes/type.pipe';
 import {AngminService} from '../services/angmin.service';
 import {NotificationService} from '../services/notification.service';
@@ -43,24 +39,20 @@ import {VisualService} from '../services/visual.service';
   selector: 'app-datum',
   standalone: true,
   imports: [
-    FormsModule,
-    CodeEditor,
     Button,
-    SelectButtonModule,
-    ToggleButtonModule,
-    ToolbarModule,
     IconLabelComponent,
-    PanelModule,
-    PageControlComponent,
+    ToolbarModule,
+    ConfirmDialogComponent,
     ErrorDialogComponent,
     ProgressDialogComponent,
-    TableModule,
-    StringPipe,
-    IconTableHeaderComponent,
-    InputTextModule,
-    TreeTableComponent,
     FileUploadModule,
-    ConfirmDialogComponent,
+    PanelModule,
+    SelectButtonModule,
+    ToggleButtonModule,
+    CodeEditor,
+    FormsModule,
+    PageControlComponent,
+    TreeTableComponent,
   ],
   templateUrl: './datum.component.html',
   styleUrl: './datum.component.css',

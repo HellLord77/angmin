@@ -1,5 +1,171 @@
-@for (server of angminService.getServers(); track server.alias) {
-  <div>
-    <a [routerLink]="server.alias">{{ server.alias }}</a>
-  </div>
-}
+<app-export-dialog
+  [(visible)]="confirmExportVisible"
+  [(items)]="taskServers"
+  [itemIcon]="PrimeIcons.SERVER"
+  (onConfirm)="confirmExportServers($event)"
+  headerLabel="Choose servers export format"
+  itemField="alias"
+/>
+
+<app-confirm-dialog
+  [(items)]="taskServers"
+  [headerIcon]="PrimeIcons.TIMES_CIRCLE"
+  [itemIcon]="PrimeIcons.SERVER"
+  key="delete"
+  headerLabel="Confirm servers delete"
+  itemField="alias"
+/>
+
+<p-contextMenu #context [model]="contextMenu" />
+
+<p-table
+  [(selection)]="selectedServers"
+  [(contextMenuSelection)]="contextServer"
+  [sortOrder]="1"
+  [contextMenu]="context"
+  [value]="servers"
+  scrollable
+  dataKey="alias"
+  scrollHeight="flex"
+  sortField="alias"
+  styleClass="p-datatable-gridlines p-datatable-striped"
+>
+  <ng-template pTemplate="caption">
+    <p-toolbar styleClass="border-noround-bottom">
+      <ng-template pTemplate="left">
+        <div class="container">
+          <p-fileUpload
+            [chooseIcon]="PrimeIcons.DOWNLOAD"
+            (uploadHandler)="handleImportServers($event)"
+            auto
+            customUpload
+            accept=".csv,.json"
+            chooseLabel="Import"
+            mode="basic"
+          />
+          <p-splitButton
+            [buttonDisabled]="!selectedServers.length"
+            [icon]="PrimeIcons.UPLOAD"
+            [model]="exportMenu"
+            (onClick)="chooseExportServers(ActionType.Select)"
+            label="Export"
+            severity="help"
+          />
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="center">
+        <app-icon-label [icon]="PrimeIcons.BOX" label="Angmin" deepClass="header" />
+      </ng-template>
+
+      <ng-template pTemplate="right">
+        <div class="container">
+          <p-button [icon]="PrimeIcons.PLUS" disabled label="Add" severity="success" />
+          <p-splitButton
+            [buttonDisabled]="!selectedServers.length"
+            [icon]="PrimeIcons.TRASH"
+            [model]="deleteMenu"
+            (onClick)="confirmDeleteServers(ActionType.Select)"
+            label="Delete"
+            severity="danger"
+          />
+          <p-splitButton [icon]="PrimeIcons.CLONE" disabled label="Clone" severity="info" />
+        </div>
+      </ng-template>
+    </p-toolbar>
+
+    <p-toolbar styleClass="border-noround-top">
+      <ng-template pTemplate="left">
+        <app-page-control
+          [backDisabled]="true"
+          [refreshOutlined]="true"
+          (onRefresh)="refreshServers()"
+        />
+      </ng-template>
+
+      <ng-template pTemplate="right">
+        <div class="container">
+          <p-inputGroup>
+            <p-inputGroupAddon>
+              <app-icon-label [icon]="PrimeIcons.SEARCH" />
+            </p-inputGroupAddon>
+            <input
+              #search
+              (input)="filterTable(search.value)"
+              pInputText
+              placeholder="Search servers..."
+              type="text"
+            />
+            <button
+              [disabled]="!search.value"
+              [icon]="PrimeIcons.TIMES"
+              (click)="clearSearch()"
+              pButton
+              severity="danger"
+              type="button"
+            ></button>
+          </p-inputGroup>
+          <p-button
+            [icon]="PrimeIcons.FILTER_SLASH"
+            (onClick)="resetTable()"
+            outlined
+            label="Clear"
+          />
+        </div>
+      </ng-template>
+    </p-toolbar>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th class="w-1rem" pFrozenColumn>
+        <p-tableHeaderCheckbox />
+      </th>
+      <th pFrozenColumn pSortableColumn="alias">
+        <app-icon-table-header [icon]="PrimeIcons.SERVER" label="Server" sortField="alias" />
+      </th>
+      <th>
+        <app-icon-table-header [icon]="PrimeIcons.UNLOCK" label="Scheme" />
+      </th>
+      <th>
+        <app-icon-table-header [icon]="PrimeIcons.MAP" label="Host" />
+      </th>
+      <th class="w-1rem">
+        <app-icon-table-header [icon]="PrimeIcons.DIRECTIONS" label="Port" />
+      </th>
+    </tr>
+  </ng-template>
+
+  <ng-template let-item pTemplate="body">
+    <tr [pContextMenuRow]="item" [pSelectableRow]="item">
+      <td pFrozenColumn>
+        <p-tableCheckbox [value]="item" />
+      </td>
+      <td pFrozenColumn>
+        <p-button [label]="item.alias" [routerLink]="item.alias" link styleClass="py-0" />
+      </td>
+      <td>
+        {{ item.scheme }}
+      </td>
+      <td>
+        {{ item.hostname }}
+      </td>
+      <td>
+        {{ item.port }}
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="100%">
+        <app-icon-label
+          class="m-auto block w-fit"
+          [icon]="PrimeIcons.SEARCH_MINUS"
+          label="No servers"
+          deepClass="header"
+        />
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

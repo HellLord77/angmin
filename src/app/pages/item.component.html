@@ -5,57 +5,14 @@
   (onRefresh)="refreshData()"
 />
 
-<p-dialog
-  [(visible)]="chooseExportVisible"
-  [draggable]="false"
-  [resizable]="false"
-  dismissableMask
-  modal
-  styleClass="w-6"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.FILE_EXPORT"
-      label="Choose documents export format"
-      deepClass="p-dialog-title"
-    />
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    <div class="container">
-      <p-chips
-        class="w-full"
-        [(ngModel)]="taskData"
-        [disabled]="taskData.length === 1"
-        (onFocus)="removeChipsInput($event)"
-        autofocus
-        styleClass="w-full"
-      >
-        <ng-template let-datum pTemplate="item">
-          <app-icon-label [icon]="PrimeIcons.FILE" [label]="datum.id" />
-        </ng-template>
-      </p-chips>
-      <!-- TODO: empty exportData -->
-      <!-- embed? -->
-    </div>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button
-      (onClick)="chosenExportData(ExportType.JSON)"
-      badge="{;}"
-      label="JSON"
-      severity="primary"
-    />
-    <p-button
-      (onClick)="chosenExportData(ExportType.CSV)"
-      outlined
-      badge="{,}"
-      label="CSV"
-      severity="secondary"
-    />
-  </ng-template>
-</p-dialog>
+<app-export-dialog
+  [(visible)]="confirmExportVisible"
+  [(items)]="taskData"
+  [itemIcon]="PrimeIcons.FILE"
+  (onConfirm)="confirmExportData($event)"
+  headerLabel="Choose documents export format"
+  itemField="id"
+/>
 
 <p-dialog
   [(visible)]="addDatumVisible"
@@ -295,16 +252,16 @@
             <ng-template pTemplate="input">
               <div class="flex flex-column align-items-center">
                 @switch (datum[column] | type) {
-                  @case (ColumnType.Undefined) {
+                  @case (Type.Undefined) {
                     <input class="min-w-full" ngModel="undefined" disabled pInputText type="text" />
                   }
-                  @case (ColumnType.Null) {
+                  @case (Type.Null) {
                     <input class="min-w-full" ngModel="null" disabled pInputText type="text" />
                   }
-                  @case (ColumnType.Boolean) {
+                  @case (Type.Boolean) {
                     <p-inputSwitch [(ngModel)]="datum[column]" />
                   }
-                  @case (ColumnType.Number) {
+                  @case (Type.Number) {
                     <p-inputNumber
                       [(ngModel)]="datum[column]"
                       [allowEmpty]="false"
@@ -315,7 +272,7 @@
                       showButtons
                     />
                   }
-                  @case (ColumnType.String) {
+                  @case (Type.String) {
                     <input
                       class="min-w-full"
                       [(ngModel)]="datum[column]"

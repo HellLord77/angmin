@@ -14,6 +14,7 @@ import {Button} from 'primeng/button';
   host: {class: 'container justify-content-end'},
 })
 export class PageControlComponent {
+  backDisabled = input(false);
   refreshOutlined = input(false);
   lastRefresh = input<Date>();
   onRefresh = output();

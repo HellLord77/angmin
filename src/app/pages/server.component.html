@@ -1,52 +1,13 @@
 <app-error-dialog [error]="lastError" [server]="server()" (onRefresh)="refreshItems()" />
 
-<p-dialog
-  [(visible)]="chooseExportVisible"
-  [draggable]="false"
-  [resizable]="false"
-  dismissableMask
-  modal
-  styleClass="w-6"
->
-  <ng-template pTemplate="header">
-    <app-icon-label
-      [icon]="PrimeIcons.FILE_EXPORT"
-      label="Choose collections export format"
-      deepClass="p-dialog-title"
-    />
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    <p-chips
-      class="w-full"
-      [(ngModel)]="taskItems"
-      [disabled]="taskItems.length === 1"
-      (onFocus)="removeChipsInput($event)"
-      autofocus
-      styleClass="w-full"
-    >
-      <ng-template let-item pTemplate="item">
-        <app-icon-label [icon]="PrimeIcons.TABLE" [label]="item.name" />
-      </ng-template>
-    </p-chips>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <p-button
-      (onClick)="chosenExportItems(ExportType.JSON)"
-      badge="{;}"
-      label="JSON"
-      severity="primary"
-    />
-    <p-button
-      (onClick)="chosenExportItems(ExportType.CSV)"
-      outlined
-      badge="{,}"
-      label="CSV"
-      severity="secondary"
-    />
-  </ng-template>
-</p-dialog>
+<app-export-dialog
+  [(visible)]="confirmExportVisible"
+  [(items)]="taskItems"
+  [itemIcon]="PrimeIcons.TABLE"
+  (onConfirm)="confirmExportItems($event)"
+  headerLabel="Choose collections export format"
+  itemField="name"
+/>
 
 <app-confirm-dialog
   [(items)]="taskItems"
