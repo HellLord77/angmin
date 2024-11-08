@@ -1,6 +1,7 @@
 import {CodeEditor} from '@acrodata/code-editor';
 import {inject, Injectable} from '@angular/core';
 
+import {Scale} from '../enums/scale';
 import {Theme} from '../enums/theme';
 import {StorageService} from './storage.service';
 
@@ -27,7 +28,7 @@ export class VisualService {
     this.#codeEditor = undefined;
   }
 
-  setScale(scale: number) {
+  setScale(scale: Scale) {
     document.documentElement.style.fontSize = `${1 + 0.125 * scale}rem`;
     this.storageService.setScale(scale);
   }

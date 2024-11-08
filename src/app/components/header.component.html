@@ -56,9 +56,17 @@
   <ng-template pTemplate="end">
     <div class="flex align-items-center">
       <p-buttonGroup class="w-full">
-        <p-button [disabled]="scale === -2" [icon]="PrimeIcons.MINUS" (onClick)="decreaseScale()" />
+        <p-button
+          [disabled]="scale === Scale.VerySmall"
+          [icon]="PrimeIcons.MINUS"
+          (onClick)="decreaseScale()"
+        />
         <p-button [label]="scale.toString()" disabled />
-        <p-button [disabled]="scale === 2" [icon]="PrimeIcons.PLUS" (onClick)="increaseScale()" />
+        <p-button
+          [disabled]="scale === Scale.VeryLarge"
+          [icon]="PrimeIcons.PLUS"
+          (onClick)="increaseScale()"
+        />
       </p-buttonGroup>
       <p-divider layout="vertical" />
       <p-inputGroup>

@@ -17,6 +17,7 @@ import {ToastModule} from 'primeng/toast';
 import {ToggleButtonModule} from 'primeng/togglebutton';
 import {ToolbarModule} from 'primeng/toolbar';
 
+import {Scale} from '../enums/scale';
 import {Theme} from '../enums/theme';
 import {NotificationService} from '../services/notification.service';
 import {VisualService} from '../services/visual.service';
@@ -66,6 +67,7 @@ export class HeaderComponent implements OnInit {
   navigationMenu?: MenuItem[];
 
   protected readonly PrimeIcons = PrimeIcons;
+  protected readonly Scale = Scale;
   protected readonly Theme = Theme;
 
   ngOnInit() {
