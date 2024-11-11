@@ -20,6 +20,7 @@ import {ProgressDialogComponent} from '../components/progress-dialog.component';
 import {TableComponent} from '../components/table.component';
 import {TaskType} from '../enums/task-type';
 import {Datum} from '../models/datum.model';
+import {Option} from '../models/option.model';
 import {AngminService} from '../services/angmin.service';
 import {NotificationService} from '../services/notification.service';
 
@@ -60,9 +61,9 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
   tableComponent = viewChild.required(TableComponent);
   editorComponent = viewChild.required(EditorComponent);
 
-  editOptions = [
-    {label: 'Simple', value: true, icon: PrimeIcons.PEN_TO_SQUARE},
-    {label: 'Advanced', value: false, icon: PrimeIcons.FILE_EDIT},
+  editOptions: Option<boolean>[] = [
+    {label: 'Simple', icon: PrimeIcons.PEN_TO_SQUARE, value: true},
+    {label: 'Advanced', icon: PrimeIcons.FILE_EDIT, value: false},
   ];
   editorHidden = true;
 

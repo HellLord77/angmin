@@ -30,6 +30,10 @@ export class NetworkService {
     return `${server.scheme}://${credentials}${server.hostname}:${server.port}${pathname}`;
   }
 
+  headServer$(server: Server) {
+    return this.httpClient.head<null>(this.#getUrl(server));
+  }
+
   getServer$(server: Server) {
     return this.httpClient.get(this.#getUrl(server), {responseType: 'text'});
   }

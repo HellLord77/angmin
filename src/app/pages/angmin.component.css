@@ -1,0 +1,14 @@
+p-card::ng-deep .p-card-body,
+p-card::ng-deep .p-card-content {
+  padding: 0.5rem;
+}
+
+p-selectButton::ng-deep .p-button:first-of-type {
+  border-top-left-radius: unset;
+  border-bottom-left-radius: unset;
+}
+
+p-inputnumber::ng-deep .p-inputnumber-input {
+  border-top-left-radius: unset;
+  border-bottom-left-radius: unset;
+}

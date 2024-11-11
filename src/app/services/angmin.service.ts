@@ -2,6 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {FilterMatchMode, FilterMetadata, SortMeta} from 'primeng/api';
 import {catchError, concatMap, from, map, Observable, Subscriber, timer} from 'rxjs';
 
+import {PredefinedAlias} from '../errors/predefined-alias.error';
 import {UndefinedAlias} from '../errors/undefined-alias.error';
 import {Datum} from '../models/datum.model';
 import {Item} from '../models/item.model';
@@ -18,11 +19,32 @@ export class AngminService {
   storageService = inject(StorageService);
   networkService = inject(NetworkService);
 
-  getServers() {
-    return this.storageService.getServers();
+  touchServer$(server: Server) {
+    return this.networkService.headServer$(server);
   }
 
-  getServer$(alias: string) {
+  createServer$(partialServer: Partial<Server>) {
+    const server: Server = {
+      alias: partialServer.alias!,
+      scheme: partialServer.scheme!,
+      hostname: partialServer.hostname || 'localhost',
+      port: partialServer.port ?? 3000,
+    };
+
+    return new Observable((subscriber: Subscriber<void>) => {
+      if (this.storageService.getServer(server.alias) !== undefined) {
+        throw new PredefinedAlias(server.alias);
+      }
+
+      subscriber.next();
+      subscriber.complete();
+    }).pipe(
+      concatMap(() => this.touchServer$(server)),
+      map(() => this.storageService.setServer(server)),
+    );
+  }
+
+  readServer$(alias: string) {
     return new Observable((subscriber: Subscriber<Server>) => {
       const server = this.storageService.getServer(alias);
       if (server === undefined) {
@@ -96,7 +118,7 @@ export class AngminService {
     delete partialDatum.id;
 
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) => this.networkService.postItem$(server, name, partialDatum)),
       ),
     );
@@ -104,7 +126,7 @@ export class AngminService {
 
   readItems$(alias: string) {
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) => this.networkService.getServer$(server)),
         map((html) => this.#getItems(html)),
       ),
@@ -117,7 +139,7 @@ export class AngminService {
       .toString();
 
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) => this.networkService.getItem$(server, name, sort)),
       ),
     );
@@ -155,7 +177,7 @@ export class AngminService {
     });
 
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) =>
           this.networkService.getItemPaginated$(server, name, page, per_page, sort, conditions),
         ),
@@ -165,7 +187,7 @@ export class AngminService {
 
   readValue$(alias: string, name: string, id: string) {
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) => this.networkService.getValue$(server, name, id)),
       ),
     );
@@ -173,7 +195,7 @@ export class AngminService {
 
   updateValue$(alias: string, name: string, datum: Datum) {
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) => this.networkService.putValue$(server, name, datum.id, datum)),
       ),
     );
@@ -184,7 +206,7 @@ export class AngminService {
     delete partialDatum.id;
 
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) =>
           this.networkService.patchValue$(server, name, datum.id, partialDatum),
         ),
@@ -194,7 +216,7 @@ export class AngminService {
 
   deleteValue$(alias: string, name: string, id: string) {
     return this.#delayError(
-      this.getServer$(alias).pipe(
+      this.readServer$(alias).pipe(
         concatMap((server) => this.networkService.deleteValue$(server, name, id)),
       ),
     );

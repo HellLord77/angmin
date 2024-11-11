@@ -15,6 +15,7 @@ import {TableModule} from 'primeng/table';
 
 import {Type} from '../enums/type';
 import {Column} from '../models/column.model';
+import {Option} from '../models/option.model';
 import {StringPipe} from '../pipes/string.pipe';
 import {ColorPickerComponent} from './color-picker.component';
 import {DatePickerComponent} from './date-picker.component';
@@ -56,9 +57,9 @@ export class TreeTableComponent {
 
   protected expanded: Record<string, boolean> = {};
   protected types = Object.entries(Type).filter((entry) => entry[1] !== Type.Undefined);
-  protected booleanOptions = [
-    {label: 'False', value: false, icon: PrimeIcons.TIMES},
-    {label: 'True', value: true, icon: PrimeIcons.CHECK},
+  protected booleanOptions: Option<boolean>[] = [
+    {label: 'False', icon: PrimeIcons.TIMES, value: false},
+    {label: 'True', icon: PrimeIcons.CHECK, value: true},
   ];
 
   protected readonly PrimeIcons = PrimeIcons;

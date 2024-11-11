@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 
 import {Scale} from '../enums/scale';
-import {Scheme} from '../enums/scheme';
 import {Theme} from '../enums/theme';
 import {isServer} from '../functions/isServer';
 import {AngminData} from '../models/angmin-data.model';
@@ -50,13 +49,6 @@ export class StorageService {
     this.#theme = Theme.Dark;
     this.#notify = true;
     this.#servers = new Map<string, Server>();
-
-    this.#servers.set('localHost', {
-      alias: 'localHost',
-      hostname: 'localhost',
-      port: 3000,
-      scheme: Scheme.HTTP,
-    });
   }
 
   store() {
@@ -110,6 +102,11 @@ export class StorageService {
 
   setServer(server: Server) {
     this.#servers.set(server.alias, server);
+    this.store();
+  }
+
+  delServers(aliases: string[]) {
+    aliases.forEach((alias) => this.#servers.delete(alias));
     this.store();
   }
 }

@@ -7,6 +7,76 @@
   itemField="alias"
 />
 
+<p-dialog
+  [(visible)]="addServerVisible"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="cancelAddServer()"
+  dismissableMask
+  modal
+>
+  <ng-template pTemplate="header">
+    <app-icon-label
+      [icon]="PrimeIcons.FOLDER_PLUS"
+      label="Add new server"
+      deepClass="p-dialog-title"
+    />
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <p-card #add>
+      <div class="container flex-column">
+        <p-inputGroup>
+          <p-inputGroupAddon>Server</p-inputGroupAddon>
+          <input [(ngModel)]="addServerPartial.alias" pInputText />
+        </p-inputGroup>
+
+        <p-inputGroup>
+          <p-inputGroupAddon>Scheme</p-inputGroupAddon>
+          <p-selectButton
+            [(ngModel)]="addServerPartial.scheme"
+            [options]="schemeOptions"
+            [allowEmpty]="false"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </p-inputGroup>
+
+        <p-inputGroup>
+          <p-inputGroupAddon>Host</p-inputGroupAddon>
+          <input [(ngModel)]="addServerPartial.hostname" pInputText placeholder="localhost" />
+        </p-inputGroup>
+
+        <p-inputGroup>
+          <p-inputGroupAddon>Port</p-inputGroupAddon>
+          <p-inputNumber
+            [(ngModel)]="addServerPartial.port"
+            [min]="1"
+            [max]="65535"
+            [useGrouping]="false"
+            placeholder="3000"
+          />
+        </p-inputGroup>
+      </div>
+    </p-card>
+
+    <p-blockUI [blocked]="!task.closed && taskType === TaskType.Create" [target]="add">
+      <p-progressSpinner />
+    </p-blockUI>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      [icon]="PrimeIcons.SAVE"
+      [disabled]="addServerPartial.alias!.length === 0"
+      [loading]="!task.closed && taskType === TaskType.Create"
+      (onClick)="saveAddServer()"
+      label="Save"
+      severity="success"
+    />
+  </ng-template>
+</p-dialog>
+
 <app-confirm-dialog
   [(items)]="taskServers"
   [headerIcon]="PrimeIcons.TIMES_CIRCLE"
@@ -60,7 +130,12 @@
 
       <ng-template pTemplate="right">
         <div class="container">
-          <p-button [icon]="PrimeIcons.PLUS" disabled label="Add" severity="success" />
+          <p-button
+            [icon]="PrimeIcons.PLUS"
+            (onClick)="initAddServer()"
+            label="Add"
+            severity="success"
+          />
           <p-splitButton
             [buttonDisabled]="!selectedServers.length"
             [icon]="PrimeIcons.TRASH"
@@ -145,7 +220,11 @@
         <p-button [label]="item.alias" [routerLink]="item.alias" link styleClass="py-0" />
       </td>
       <td>
-        {{ item.scheme }}
+        @if (item.scheme === Scheme.HTTP) {
+          <p-tag [icon]="PrimeIcons.LOCK_OPEN" value="HTTP" severity="danger" />
+        } @else {
+          <p-tag [icon]="PrimeIcons.LOCK" value="HTTPS" severity="success" />
+        }
       </td>
       <td>
         {{ item.hostname }}
