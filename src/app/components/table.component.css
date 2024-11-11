@@ -1,0 +1,3 @@
+app-tree-table::ng-deep .p-datatable-thead {
+  z-index: 3;
+}

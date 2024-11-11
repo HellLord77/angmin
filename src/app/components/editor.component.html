@@ -1,0 +1,45 @@
+<p-toolbar styleClass="border-noround-bottom">
+  <ng-template pTemplate="start">
+    <div class="container">
+      <p-selectButton
+        [(ngModel)]="extensions"
+        [allowEmpty]="false"
+        [options]="setups"
+        dataKey="setup"
+        optionLabel="setup"
+        optionValue="extensions"
+      />
+      <p-toggleButton
+        [(ngModel)]="highlightWhitespace"
+        [offIcon]="PrimeIcons.EYE_SLASH"
+        [onIcon]="PrimeIcons.EYE"
+        offLabel="Whitespace"
+        onLabel="Whitespace"
+      />
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="end">
+    <div class="container">
+      <p-button [icon]="PrimeIcons.WRENCH" (onClick)="repair()" label="Repair" severity="warning" />
+      <p-button
+        [icon]="PrimeIcons.SPARKLES"
+        [disabled]="invalid"
+        (onClick)="format()"
+        label="Format"
+        severity="help"
+      />
+      <p-button [icon]="PrimeIcons.ERASER" (onClick)="clear()" label="Clear" severity="danger" />
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<code-editor
+  class="flex-content border-1 border-top-none"
+  [(ngModel)]="value"
+  [extensions]="extensions"
+  [highlightWhitespace]="highlightWhitespace"
+  [setup]="null"
+  (change)="invalid = false"
+  (blur)="validate()"
+/>

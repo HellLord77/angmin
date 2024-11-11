@@ -251,7 +251,7 @@
           <p-cellEditor>
             <ng-template pTemplate="input">
               <div class="flex flex-column align-items-center">
-                @switch (datum[column] | type) {
+                @switch (typeOf(datum[column])) {
                   @case (Type.Undefined) {
                     <input class="min-w-full" ngModel="undefined" disabled pInputText type="text" />
                   }
@@ -296,7 +296,7 @@
             </ng-template>
 
             <ng-template pTemplate="output">
-              @switch (datum[column] | type) {
+              @switch (typeOf(datum[column])) {
                 @case (Type.Undefined) {
                   <p-tag
                     [icon]="PrimeIcons.QUESTION_CIRCLE"

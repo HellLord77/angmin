@@ -16,7 +16,6 @@ import {TableModule} from 'primeng/table';
 import {Type} from '../enums/type';
 import {Column} from '../models/column.model';
 import {StringPipe} from '../pipes/string.pipe';
-import {TypePipe} from '../pipes/type.pipe';
 import {ColorPickerComponent} from './color-picker.component';
 import {DatePickerComponent} from './date-picker.component';
 import {IconTableHeaderComponent} from './icon-table-header.component';
@@ -36,7 +35,6 @@ import {IconTableHeaderComponent} from './icon-table-header.component';
     CheckboxModule,
     InputNumberModule,
     InputSwitchModule,
-    TypePipe,
     InputGroupModule,
     ButtonDirective,
     SelectButtonModule,
@@ -47,7 +45,6 @@ import {IconTableHeaderComponent} from './icon-table-header.component';
   ],
   templateUrl: './tree-table.component.html',
   styleUrl: './tree-table.component.css',
-  providers: [TypePipe],
 })
 export class TreeTableComponent {
   columns = input.required<Column[]>();
@@ -70,11 +67,10 @@ export class TreeTableComponent {
   fixName(column?: Column) {
     const columns = this.columns();
     if (this.isArray()) {
-      for (let index = 0; index < columns.length; ++index) {
-        columns[index].name = index.toString();
-      }
-    }
-    if (column) {
+      columns.forEach((column, index) => {
+        column.name = index.toString();
+      });
+    } else if (column) {
       const names = new Set();
       columns.forEach((otherColumn) => {
         if (column !== otherColumn) {
@@ -148,7 +144,7 @@ export class TreeTableComponent {
   clone(index: number) {
     const columns = this.columns();
     const column: Column = JSON.parse(JSON.stringify(columns[index]));
-    this.fixName(column);
     columns.splice(index + 1, 0, column);
+    this.fixName(column);
   }
 }

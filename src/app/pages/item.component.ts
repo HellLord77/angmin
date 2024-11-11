@@ -37,11 +37,11 @@ import {ExportType} from '../enums/export-type';
 import {TaskType} from '../enums/task-type';
 import {Type} from '../enums/type';
 import {columnsToValue} from '../functions/columnsToValue';
+import {typeOf} from '../functions/typeOf';
 import {Column} from '../models/column.model';
 import {Datum} from '../models/datum.model';
 import {PaginatedData} from '../models/paginated-data.model';
 import {StringPipe} from '../pipes/string.pipe';
-import {TypePipe} from '../pipes/type.pipe';
 import {AngminService, DatumMapper} from '../services/angmin.service';
 import {NotificationService} from '../services/notification.service';
 
@@ -62,7 +62,6 @@ import {NotificationService} from '../services/notification.service';
     TagModule,
     StringPipe,
     IconLabelComponent,
-    TypePipe,
     InputNumberModule,
     FormsModule,
     ToolbarModule,
@@ -163,6 +162,7 @@ export class ItemComponent implements OnDestroy {
   protected readonly Type = Type;
   protected readonly ActionType = ActionType;
   protected readonly TaskType = TaskType;
+  protected readonly typeOf = typeOf;
 
   ngOnDestroy() {
     this.task.unsubscribe();

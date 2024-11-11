@@ -1,93 +1,70 @@
 import '@codemirror/lang-json';
 
-import {CodeEditor} from '@acrodata/code-editor';
 import {AfterViewInit, Component, inject, input, OnDestroy, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {json, jsonParseLinter} from '@codemirror/lang-json';
-import {linter, lintGutter} from '@codemirror/lint';
-import {Extension} from '@codemirror/state';
-import {basicSetup, minimalSetup} from 'codemirror';
-import {jsonrepair} from 'jsonrepair';
 import {ConfirmationService, PrimeIcons} from 'primeng/api';
 import {Button} from 'primeng/button';
 import {FileUploadModule} from 'primeng/fileupload';
 import {PanelModule} from 'primeng/panel';
 import {SelectButtonModule} from 'primeng/selectbutton';
-import {ToggleButtonModule} from 'primeng/togglebutton';
 import {ToolbarModule} from 'primeng/toolbar';
 import {NEVER} from 'rxjs';
 
 import {ConfirmDialogComponent} from '../components/confirm-dialog.component';
+import {EditorComponent} from '../components/editor.component';
 import {ErrorDialogComponent} from '../components/error-dialog.component';
 import {IconLabelComponent} from '../components/icon-label.component';
 import {PageControlComponent} from '../components/page-control.component';
 import {ProgressDialogComponent} from '../components/progress-dialog.component';
-import {TreeTableComponent} from '../components/tree-table.component';
+import {TableComponent} from '../components/table.component';
 import {TaskType} from '../enums/task-type';
-import {Type} from '../enums/type';
-import {columnsToValue} from '../functions/columnsToValue';
-import {Column} from '../models/column.model';
 import {Datum} from '../models/datum.model';
-import {EditorSetup} from '../models/editor-setup.model';
-import {TypePipe} from '../pipes/type.pipe';
 import {AngminService} from '../services/angmin.service';
 import {NotificationService} from '../services/notification.service';
-import {VisualService} from '../services/visual.service';
 
 @Component({
   selector: 'app-datum',
   standalone: true,
   imports: [
-    Button,
-    IconLabelComponent,
-    ToolbarModule,
-    ConfirmDialogComponent,
     ErrorDialogComponent,
+    ConfirmDialogComponent,
     ProgressDialogComponent,
-    FileUploadModule,
     PanelModule,
-    SelectButtonModule,
-    ToggleButtonModule,
-    CodeEditor,
-    FormsModule,
+    ToolbarModule,
+    Button,
+    FileUploadModule,
+    IconLabelComponent,
     PageControlComponent,
-    TreeTableComponent,
+    SelectButtonModule,
+    TableComponent,
+    EditorComponent,
+    FormsModule,
   ],
   templateUrl: './datum.component.html',
   styleUrl: './datum.component.css',
   host: {class: 'h-full block'},
-  providers: [ConfirmationService, TypePipe],
+  providers: [ConfirmationService],
 })
 export class DatumComponent implements AfterViewInit, OnDestroy {
   server = input.required<string>();
   item = input.required<string>();
   datum = input.required<string>();
 
-  typePipe = inject(TypePipe);
   activatedRoute = inject(ActivatedRoute);
   router = inject(Router);
   confirmationService = inject(ConfirmationService);
-  visualService = inject(VisualService);
   notificationService = inject(NotificationService);
   angminService = inject(AngminService);
 
-  treeTableComponent = viewChild.required(TreeTableComponent);
-  codeEditor = viewChild.required(CodeEditor);
+  tableComponent = viewChild.required(TableComponent);
+  editorComponent = viewChild.required(EditorComponent);
 
   editOptions = [
     {label: 'Simple', value: true, icon: PrimeIcons.PEN_TO_SQUARE},
     {label: 'Advanced', value: false, icon: PrimeIcons.FILE_EDIT},
   ];
   editorHidden = true;
-  editorInvalid = false;
-  setups: EditorSetup[] = [
-    {'setup': 'Basic', 'extensions': [basicSetup, lintGutter(), json(), linter(jsonParseLinter())]},
-    {'setup': 'Minimal', 'extensions': [minimalSetup, json()]},
-    {'setup': 'None', 'extensions': []},
-  ];
-  extensions: Extension[] = this.setups[0].extensions;
-  highlightWhitespace = false;
 
   lastError?: Error;
   lastRefresh?: Date;
@@ -96,33 +73,25 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
   task = NEVER.subscribe();
 
   value: Datum = {id: ''};
-  columns: Column[] = [];
-  json = '';
 
   protected readonly PrimeIcons = PrimeIcons;
   protected readonly TaskType = TaskType;
 
   ngAfterViewInit() {
     this.refreshValue();
-    this.visualService.setCodeEditor(this.codeEditor());
   }
 
   ngOnDestroy() {
     this.task.unsubscribe();
-    this.visualService.unsetCodeEditor();
   }
 
   refreshValue() {
     this.lastError = undefined;
 
-    this.treeTableComponent().collapseAll();
-
     this.taskType = TaskType.Read;
     this.task = this.angminService.readValue$(this.server(), this.item(), this.datum()).subscribe({
       next: (value) => {
         this.value = value;
-        this.columns = this.getColumns();
-        this.json = JSON.stringify(value, null, 2);
       },
       error: (error) => {
         this.lastError = error;
@@ -138,7 +107,7 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
 
   completeRefreshItems() {
     this.lastRefresh = new Date();
-    this.notificationService.showCompleted(TaskType.Read, true, `Value #: ${this.json.length}`);
+    this.notificationService.showCompleted(TaskType.Read, true);
   }
 
   confirmDeleteValue() {
@@ -192,13 +161,10 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
   }
 
   acceptSaveValue() {
-    const value = this.editorHidden
-      ? (this.getTableValue() as unknown as Datum)
-      : this.getEditorValue();
-    this.json = JSON.stringify(value, null, 2);
+    this.tabChange(true);
 
     this.taskType = TaskType.Update;
-    this.task = this.angminService.updateValue$(this.server(), this.item(), value).subscribe({
+    this.task = this.angminService.updateValue$(this.server(), this.item(), this.value).subscribe({
       error: (error) => {
         this.lastError = error;
       },
@@ -219,73 +185,11 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
     this.notificationService.showCompleted(TaskType.Update, true);
   }
 
-  getTableValue() {
-    return columnsToValue(this.columns);
-  }
-
-  getEditorValue() {
-    const value: Datum = JSON.parse(this.json);
-    value.id = this.datum();
-    return value;
-  }
-
-  getColumns(obj: object = this.value) {
-    const entries: [string, object][] = Array.isArray(obj)
-      ? obj.map((value, index) => [index.toString(), value])
-      : Object.entries(obj);
-
-    return entries.map(([name, value]) => {
-      const column: Column = {name, type: this.typePipe.transform(value), value};
-      if (value !== null && typeof value === 'object') {
-        column.columns = this.getColumns(value);
-      }
-      return column;
-    });
-  }
-
-  tabChange() {
-    if (this.editorHidden) {
-      this.columns = this.getColumns(this.getEditorValue());
+  tabChange(saving = false) {
+    if (saving !== this.editorHidden) {
+      this.value = this.editorComponent().getValue();
     } else {
-      this.json = JSON.stringify(this.getTableValue(), null, 2);
-    }
-  }
-
-  clearTable() {
-    const value: Datum = {id: this.datum()};
-    this.columns = this.getColumns(value);
-  }
-
-  validateEditor() {
-    try {
-      const value = JSON.parse(this.json);
-      this.editorInvalid = this.typePipe.transform(value) !== Type.Object;
-    } catch {
-      this.editorInvalid = true;
-    }
-  }
-
-  clearEditor() {
-    const value: Datum = {id: this.datum()};
-    this.json = JSON.stringify(value, null, 2);
-  }
-
-  formatEditor() {
-    let value: string;
-    try {
-      value = JSON.parse(this.json);
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-    this.json = JSON.stringify(value, null, 2);
-  }
-
-  repairEditor() {
-    try {
-      this.json = jsonrepair(this.json);
-    } catch (error) {
-      console.error(error);
+      this.value = this.tableComponent().getValue();
     }
   }
 }

@@ -1,0 +1,25 @@
+<p-toolbar styleClass="border-noround-bottom">
+  <ng-template pTemplate="start">
+    <div class="container">
+      <p-button
+        [icon]="PrimeIcons.PLUS"
+        (onClick)="treeTableComponent().expandAll()"
+        label="Expand all"
+      />
+      <p-button
+        [icon]="PrimeIcons.MINUS"
+        (onClick)="treeTableComponent().collapseAll()"
+        label="Collapse all"
+      />
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="end">
+    <div class="container">
+      <p-button [icon]="PrimeIcons.COPY" label="Clone" severity="info" disabled />
+      <p-button [icon]="PrimeIcons.ERASER" (onClick)="clear()" label="Clear" severity="danger" />
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<app-tree-table class="flex-content" [columns]="value" />

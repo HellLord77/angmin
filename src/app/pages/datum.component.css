@@ -11,16 +11,3 @@ p-panel::ng-deep .p-panel-content {
   padding: 1rem;
   height: 100%;
 }
-
-app-tree-table::ng-deep .p-datatable-thead {
-  z-index: 3;
-}
-
-code-editor,
-code-editor::ng-deep .cm-editor,
-code-editor::ng-deep .cm-gutters {
-  border-color: var(--surface-border);
-  border-radius: var(--border-radius);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}

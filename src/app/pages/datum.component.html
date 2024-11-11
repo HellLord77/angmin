@@ -91,7 +91,7 @@
             />
             <p-button
               [icon]="PrimeIcons.SAVE"
-              [disabled]="editorInvalid"
+              [disabled]="editorComponent().invalid"
               (onClick)="confirmSaveValue()"
               label="Save"
               severity="success"
@@ -113,7 +113,7 @@
           <p-selectButton
             [(ngModel)]="editorHidden"
             [allowEmpty]="false"
-            [disabled]="editorInvalid"
+            [disabled]="editorComponent().invalid"
             [options]="editOptions"
             (onChange)="tabChange()"
             dataKey="label"
@@ -126,93 +126,7 @@
   </ng-template>
 
   <ng-template pTemplate="content">
-    <div class="flex-column h-full" [class.hidden]="!editorHidden" [class.flex]="editorHidden">
-      <p-toolbar styleClass="border-noround-bottom">
-        <ng-template pTemplate="start">
-          <div class="container">
-            <p-button
-              [icon]="PrimeIcons.PLUS"
-              (onClick)="this.treeTableComponent().expandAll()"
-              label="Expand all"
-            />
-            <p-button
-              [icon]="PrimeIcons.MINUS"
-              (onClick)="this.treeTableComponent().collapseAll()"
-              label="Collapse all"
-            />
-          </div>
-        </ng-template>
-
-        <ng-template pTemplate="end">
-          <div class="container">
-            <p-button [icon]="PrimeIcons.COPY" label="Clone" severity="info" disabled />
-            <p-button
-              [icon]="PrimeIcons.ERASER"
-              (onClick)="clearTable()"
-              label="Clear"
-              severity="danger"
-            />
-          </div>
-        </ng-template>
-      </p-toolbar>
-      <app-tree-table class="flex-content" [columns]="columns" />
-    </div>
-
-    <div class="flex-column h-full" [class.hidden]="editorHidden" [class.flex]="!editorHidden">
-      <p-toolbar styleClass="border-noround-bottom">
-        <ng-template pTemplate="start">
-          <div class="container">
-            <p-selectButton
-              [(ngModel)]="extensions"
-              [allowEmpty]="false"
-              [options]="setups"
-              dataKey="setup"
-              optionLabel="setup"
-              optionValue="extensions"
-            />
-            <p-toggleButton
-              [(ngModel)]="highlightWhitespace"
-              [offIcon]="PrimeIcons.EYE_SLASH"
-              [onIcon]="PrimeIcons.EYE"
-              offLabel="Whitespace"
-              onLabel="Whitespace"
-            />
-          </div>
-        </ng-template>
-
-        <ng-template pTemplate="end">
-          <div class="container">
-            <p-button
-              [icon]="PrimeIcons.WRENCH"
-              (onClick)="repairEditor()"
-              label="Repair"
-              severity="warning"
-            />
-            <p-button
-              [icon]="PrimeIcons.SPARKLES"
-              (onClick)="formatEditor()"
-              label="Format"
-              severity="help"
-            />
-            <p-button
-              [icon]="PrimeIcons.ERASER"
-              (onClick)="clearEditor()"
-              label="Clear"
-              severity="danger"
-            />
-          </div>
-        </ng-template>
-      </p-toolbar>
-
-      <code-editor
-        class="flex-content border-1 border-top-none"
-        [(ngModel)]="json"
-        [extensions]="extensions"
-        [highlightWhitespace]="highlightWhitespace"
-        [setup]="null"
-        (change)="editorInvalid = false"
-        (blur)="validateEditor()"
-      />
-    </div>
+    <app-table [datum]="value" [class.hidden]="!editorHidden" [class.flex]="editorHidden" />
+    <app-editor [datum]="value" [class.hidden]="editorHidden" [class.flex]="!editorHidden" />
   </ng-template>
 </p-panel>
