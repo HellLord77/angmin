@@ -252,12 +252,8 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
   }
 
   clearTable() {
-    for (const column of this.columns) {
-      if (column.name === 'id') {
-        this.columns = [column];
-        break;
-      }
-    }
+    const value: Datum = {id: this.datum()};
+    this.columns = this.getColumns(value);
   }
 
   validateEditor() {
@@ -270,7 +266,8 @@ export class DatumComponent implements AfterViewInit, OnDestroy {
   }
 
   clearEditor() {
-    this.json = '{}';
+    const value: Datum = {id: this.datum()};
+    this.json = JSON.stringify(value, null, 2);
   }
 
   formatEditor() {
